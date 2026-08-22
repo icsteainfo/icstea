@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { HeartMotif, StarMotif, SparkleMotif } from "@/components/home/motifs";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +29,7 @@ export function TaskCheckbox({
   const [checked, setChecked] = useState(completed);
   const [confirmCount, setConfirmCount] = useState<number | null>(null);
   const [forcing, setForcing] = useState(false);
+  const [burstKey, setBurstKey] = useState(0);
 
   async function complete(force: boolean) {
     const res = await fetch(`/api/tasks/${taskId}/complete`, {
@@ -48,6 +50,7 @@ export function TaskCheckbox({
 
   async function handleChange(next: boolean) {
     setChecked(next);
+    if (next) setBurstKey((k) => k + 1);
 
     if (next && openSubtaskCount > 0) {
       setConfirmCount(openSubtaskCount);
@@ -77,6 +80,7 @@ export function TaskCheckbox({
     try {
       await complete(true);
       setConfirmCount(null);
+      setBurstKey((k) => k + 1);
     } catch {
       setChecked(false);
       toast.error("更新に失敗しました");
@@ -87,12 +91,27 @@ export function TaskCheckbox({
 
   return (
     <>
-      <Checkbox
-        checked={checked}
-        disabled={isPending}
-        onCheckedChange={(value) => handleChange(value === true)}
-        aria-label={completed ? "未完了に戻す" : "完了にする"}
-      />
+      <span className="relative inline-flex">
+        <Checkbox
+          checked={checked}
+          disabled={isPending}
+          onCheckedChange={(value) => handleChange(value === true)}
+          aria-label={completed ? "未完了に戻す" : "完了にする"}
+        />
+        {burstKey > 0 && (
+          <span key={burstKey} aria-hidden className="pointer-events-none absolute inset-0">
+            <HeartMotif className="pop-burst absolute -top-2 -left-2 size-3.5 text-brand-pink" />
+            <StarMotif
+              className="pop-burst absolute -top-3 left-1.5 size-3 text-[#F0B429]"
+              style={{ animationDelay: "80ms" }}
+            />
+            <SparkleMotif
+              className="pop-burst absolute -top-1 -right-2 size-3 text-[#A97EF0]"
+              style={{ animationDelay: "140ms" }}
+            />
+          </span>
+        )}
+      </span>
 
       <Dialog
         open={confirmCount !== null}

@@ -7,9 +7,14 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans:
+    var(--font-noto-sans-jp), ui-sans-serif, "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+    sans-serif;
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
+  /* "TODAY'S TASKS" のような短い英字の装飾見出し専用(font-display)。
+     日本語グリフを持たないため、タスク名など本文には絶対に使わない */
+  --font-display: var(--font-baloo), ui-rounded, "Hiragino Maru Gothic ProN", sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -52,8 +57,9 @@
   --color-tint-yellow-line: var(--tint-yellow-line);
   --color-tint-lavender: var(--tint-lavender);
   --color-tint-lavender-line: var(--tint-lavender-line);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  --color-brand-pink: var(--brand-pink);
+  --radius-sm: calc(var(--radius) * 0.55);
+  --radius-md: calc(var(--radius) * 0.75);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
   --radius-2xl: calc(var(--radius) * 1.8);
@@ -61,99 +67,112 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* icsTEA配色: 紅茶・カフェらしい、上品で落ち着いたパステルカラー。
-   背景は白〜淡いアイボリー、文字は真っ黒ではなく濃いブラウングレーを基調とする。 */
+/* icsTEA配色: Care Bears × Y2K × かわいい手帳・ステッカーの世界観。
+   白を全体の主役(約7割)にして、ピンクは薄めず、しっかり発色させたアクセントとして使う。
+   本文・タスク名・数字は常に濃いインク色(#382B33)で、業務アプリとしての可読性を最優先する。 */
 :root {
-  --background: oklch(0.985 0.006 80);
-  --foreground: oklch(0.32 0.025 50);
-  --card: oklch(0.995 0.005 80);
-  --card-foreground: oklch(0.32 0.025 50);
-  --popover: oklch(0.995 0.005 80);
-  --popover-foreground: oklch(0.32 0.025 50);
-  --primary: oklch(0.52 0.07 150);
-  --primary-foreground: oklch(0.98 0.008 80);
-  --secondary: oklch(0.94 0.018 150);
-  --secondary-foreground: oklch(0.32 0.025 50);
-  --muted: oklch(0.96 0.01 70);
-  --muted-foreground: oklch(0.52 0.02 50);
-  --accent: oklch(0.94 0.025 20);
-  --accent-foreground: oklch(0.32 0.025 50);
-  --destructive: oklch(0.55 0.14 30);
-  --warning: oklch(0.68 0.13 70);
-  --border: oklch(0.9 0.012 60);
-  --input: oklch(0.87 0.015 60);
-  --ring: oklch(0.6 0.07 150);
-  --chart-1: oklch(0.83 0.05 20);
-  --chart-2: oklch(0.8 0.06 150);
-  --chart-3: oklch(0.82 0.04 240);
-  --chart-4: oklch(0.87 0.06 90);
-  --chart-5: oklch(0.83 0.05 300);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.97 0.008 80);
-  --sidebar-foreground: oklch(0.32 0.025 50);
-  --sidebar-primary: oklch(0.52 0.07 150);
-  --sidebar-primary-foreground: oklch(0.98 0.008 80);
-  --sidebar-accent: oklch(0.94 0.025 20);
-  --sidebar-accent-foreground: oklch(0.32 0.025 50);
-  --sidebar-border: oklch(0.9 0.012 60);
-  --sidebar-ring: oklch(0.6 0.07 150);
+  --background: #fff9fc;
+  --foreground: #382b33;
+  --card: #ffffff;
+  --card-foreground: #382b33;
+  --popover: #ffffff;
+  --popover-foreground: #382b33;
+  /* ボタンなど「白文字を乗せる」用途は、素のブランドピンクだと白文字のコントラストが
+     不足するため、視認性確保のため少し深くしたピンクを使う */
+  --primary: #d6316f;
+  --primary-foreground: #ffffff;
+  --secondary: #ffd6e6;
+  --secondary-foreground: #382b33;
+  --muted: #fff2f7;
+  --muted-foreground: #6e5566;
+  --accent: #cdb7f6;
+  --accent-foreground: #382b33;
+  --destructive: #d6294f;
+  --warning: #b9790a;
+  --border: #ffb3cf;
+  --input: #ffb3cf;
+  --ring: #d6316f;
+  --chart-1: #ff5f9e;
+  --chart-2: #b79af0;
+  --chart-3: #5ec3ea;
+  --chart-4: #f0b429;
+  --chart-5: #4fbe93;
+  --radius: 0.85rem;
+  --sidebar: #ffeaf3;
+  --sidebar-foreground: #382b33;
+  --sidebar-primary: #d6316f;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #cdb7f6;
+  --sidebar-accent-foreground: #382b33;
+  --sidebar-border: #ffb3cf;
+  --sidebar-ring: #d6316f;
 
-  --tint-pink: oklch(0.95 0.022 20);
-  --tint-pink-line: oklch(0.85 0.045 20);
-  --tint-green: oklch(0.94 0.025 150);
-  --tint-green-line: oklch(0.82 0.05 150);
-  --tint-blue: oklch(0.95 0.016 240);
-  --tint-blue-line: oklch(0.84 0.035 240);
-  --tint-yellow: oklch(0.96 0.03 90);
-  --tint-yellow-line: oklch(0.86 0.06 90);
-  --tint-lavender: oklch(0.95 0.02 300);
-  --tint-lavender-line: oklch(0.84 0.04 300);
+  /* ブランドの主役ピンク(濃いめ発色)。白背景の上で、濃いインク文字と組み合わせて使う */
+  --brand-pink: #ff5f9e;
+
+  --tint-pink: #ffe0ed;
+  --tint-pink-line: #ff5f9e;
+  --tint-green: #d9f5e9;
+  --tint-green-line: #4fbe93;
+  --tint-blue: #dcf1fb;
+  --tint-blue-line: #4fadde;
+  --tint-yellow: #fff1c2;
+  --tint-yellow-line: #e0a300;
+  --tint-lavender: #ece2fc;
+  --tint-lavender-line: #a97ef0;
+
+  /* カードやボタンにのせる、色つきのぷっくりした影 */
+  --shadow-dreamy-color: 214, 49, 111;
 }
 
 .dark {
-  --background: oklch(0.2 0.015 50);
-  --foreground: oklch(0.92 0.012 75);
-  --card: oklch(0.24 0.017 50);
-  --card-foreground: oklch(0.92 0.012 75);
-  --popover: oklch(0.24 0.017 50);
-  --popover-foreground: oklch(0.92 0.012 75);
-  --primary: oklch(0.72 0.09 150);
-  --primary-foreground: oklch(0.2 0.02 150);
-  --secondary: oklch(0.3 0.022 150);
-  --secondary-foreground: oklch(0.92 0.012 75);
-  --muted: oklch(0.28 0.014 60);
-  --muted-foreground: oklch(0.7 0.015 60);
-  --accent: oklch(0.32 0.03 20);
-  --accent-foreground: oklch(0.92 0.012 75);
-  --destructive: oklch(0.68 0.16 28);
-  --warning: oklch(0.76 0.13 72);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.66 0.08 150);
-  --chart-1: oklch(0.72 0.07 20);
-  --chart-2: oklch(0.68 0.08 150);
-  --chart-3: oklch(0.7 0.06 240);
-  --chart-4: oklch(0.78 0.09 90);
-  --chart-5: oklch(0.72 0.07 300);
-  --sidebar: oklch(0.24 0.017 50);
-  --sidebar-foreground: oklch(0.92 0.012 75);
-  --sidebar-primary: oklch(0.72 0.09 150);
-  --sidebar-primary-foreground: oklch(0.2 0.02 150);
-  --sidebar-accent: oklch(0.32 0.03 20);
-  --sidebar-accent-foreground: oklch(0.92 0.012 75);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.66 0.08 150);
+  --background: #2a1b23;
+  --foreground: #ffe9f2;
+  --card: #38242f;
+  --card-foreground: #ffe9f2;
+  --popover: #38242f;
+  --popover-foreground: #ffe9f2;
+  --primary: #ff5fa3;
+  --primary-foreground: #2a1424;
+  --secondary: #4a2f3d;
+  --secondary-foreground: #ffe9f2;
+  --muted: #3a2530;
+  --muted-foreground: #d9a8bf;
+  --accent: #5b4478;
+  --accent-foreground: #ffe9f2;
+  --destructive: #ff6b81;
+  --warning: #ffcc4d;
+  --border: oklch(1 0 0 / 14%);
+  --input: oklch(1 0 0 / 18%);
+  --ring: #ff5fa3;
+  --chart-1: #ff8fbc;
+  --chart-2: #cdb7f6;
+  --chart-3: #9ddbf5;
+  --chart-4: #ffcf4d;
+  --chart-5: #6fcba3;
+  --sidebar: #38242f;
+  --sidebar-foreground: #ffe9f2;
+  --sidebar-primary: #ff5fa3;
+  --sidebar-primary-foreground: #2a1424;
+  --sidebar-accent: #5b4478;
+  --sidebar-accent-foreground: #ffe9f2;
+  --sidebar-border: oklch(1 0 0 / 14%);
+  --sidebar-ring: #ff5fa3;
 
-  --tint-pink: oklch(0.3 0.03 20);
-  --tint-pink-line: oklch(0.42 0.05 20);
-  --tint-green: oklch(0.29 0.03 150);
-  --tint-green-line: oklch(0.4 0.05 150);
-  --tint-blue: oklch(0.29 0.02 240);
-  --tint-blue-line: oklch(0.4 0.04 240);
-  --tint-yellow: oklch(0.3 0.035 90);
-  --tint-yellow-line: oklch(0.42 0.06 90);
-  --tint-lavender: oklch(0.29 0.028 300);
-  --tint-lavender-line: oklch(0.4 0.045 300);
+  --brand-pink: #ff5fa3;
+
+  --tint-pink: #4a2634;
+  --tint-pink-line: #ff8fbc;
+  --tint-green: #23392f;
+  --tint-green-line: #aee8d1;
+  --tint-blue: #223140;
+  --tint-blue-line: #9ddbf5;
+  --tint-yellow: #3f351c;
+  --tint-yellow-line: #ffe37e;
+  --tint-lavender: #362a4a;
+  --tint-lavender-line: #cdb7f6;
+
+  --shadow-dreamy-color: 0, 0, 0;
 }
 
 @layer base {
@@ -165,5 +184,81 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer components {
+  /* カード・ダイアログ・ボタンなど「浮いて見える」要素にのせる、
+     色つきでぷっくりした柔らかい影 */
+  .shadow-dreamy {
+    box-shadow:
+      0 2px 0 rgba(var(--shadow-dreamy-color), 0.08),
+      0 4px 10px -2px rgba(var(--shadow-dreamy-color), 0.22),
+      0 16px 28px -10px rgba(var(--shadow-dreamy-color), 0.32);
+  }
+  .shadow-dreamy-sm {
+    box-shadow:
+      0 2px 6px -1px rgba(var(--shadow-dreamy-color), 0.3),
+      0 6px 16px -6px rgba(var(--shadow-dreamy-color), 0.35);
+  }
+  /* CTAボタンなど、hoverでふわっと少し浮く演出 */
+  .pop-lift {
+    transition:
+      transform 150ms ease,
+      box-shadow 150ms ease;
+  }
+  .pop-lift:hover {
+    transform: translateY(-3px);
+  }
+  /* 装飾モチーフ(雲・星・ハートなど)。情報より必ず背面に、操作を妨げない。
+     親要素に isolate を付けて、この負のz-indexが他の要素に漏れないようにする */
+  .pop-motif {
+    pointer-events: none;
+    position: absolute;
+    z-index: -1;
+  }
+  @keyframes pop-twinkle {
+    0%,
+    100% {
+      opacity: 0.55;
+      transform: scale(0.9);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.08);
+    }
+  }
+  .pop-twinkle {
+    animation: pop-twinkle 2.6s ease-in-out infinite;
+  }
+
+  /* タスク完了チェック時に一瞬だけ弾けるハート・星・キラキラ用 */
+  @keyframes pop-burst {
+    0% {
+      opacity: 0;
+      transform: scale(0.3) translateY(0);
+    }
+    35% {
+      opacity: 1;
+      transform: scale(1.15) translateY(-2px);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0.9) translateY(-14px);
+    }
+  }
+  .pop-burst {
+    animation: pop-burst 700ms ease-out forwards;
+  }
+
+  /* ステーショナリー感を出す、ごく控えめなギンガムチェック柄 */
+  .pop-checker {
+    background-image:
+      linear-gradient(45deg, rgba(var(--shadow-dreamy-color), 0.08) 25%, transparent 25%, transparent 75%, rgba(var(--shadow-dreamy-color), 0.08) 75%),
+      linear-gradient(45deg, rgba(var(--shadow-dreamy-color), 0.08) 25%, transparent 25%, transparent 75%, rgba(var(--shadow-dreamy-color), 0.08) 75%);
+    background-size: 14px 14px;
+    background-position:
+      0 0,
+      7px 7px;
   }
 }

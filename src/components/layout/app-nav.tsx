@@ -13,10 +13,12 @@ import { cn } from "@/lib/utils";
 
 const MAIN_ITEMS = [
   { href: "/home", label: "ホーム" },
+  { href: "/projects", label: "プロジェクト" },
   { href: "/inventory", label: "在庫" },
   { href: "/costing", label: "ドリンク原価" },
   { href: "/sales", label: "売上分析" },
   { href: "/marketing", label: "マーケティング" },
+  { href: "/monthly-review", label: "経営MTG" },
 ];
 
 const TODO_GROUP_ITEMS = [
@@ -28,8 +30,8 @@ const TODO_GROUP_ITEMS = [
 ];
 
 const navLinkClass =
-  "rounded-md px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground";
-const navLinkActiveClass = "bg-tint-green text-foreground";
+  "rounded-full px-3 py-1.5 font-medium text-foreground/80 hover:bg-muted hover:text-foreground";
+const navLinkActiveClass = "bg-secondary text-foreground font-semibold hover:bg-secondary";
 
 export function AppNav() {
   const pathname = usePathname();
@@ -49,15 +51,15 @@ export function AppNav() {
 
       <div
         className={cn(
-          "flex items-center gap-0.5 rounded-md",
+          "flex items-center gap-0.5 rounded-full",
           isTodoGroupActive && navLinkActiveClass,
         )}
       >
         <Link
           href="/tasks"
           className={cn(
-            "flex items-center gap-1 rounded-l-md px-3 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground",
-            isTodoGroupActive && "text-foreground hover:bg-transparent",
+            "flex items-center gap-1 rounded-l-full px-3 py-1.5 font-medium text-foreground/80 hover:bg-muted hover:text-foreground",
+            isTodoGroupActive && "text-foreground font-semibold hover:bg-transparent",
           )}
         >
           <ListChecks className="size-4" />
@@ -70,7 +72,7 @@ export function AppNav() {
                 type="button"
                 aria-label="Todoメニューを開く"
                 className={cn(
-                  "flex items-center rounded-r-md px-1.5 py-1.5 text-muted-foreground hover:bg-muted hover:text-foreground",
+                  "flex items-center rounded-r-full px-1.5 py-1.5 text-foreground/80 hover:bg-muted hover:text-foreground",
                   isTodoGroupActive && "text-foreground hover:bg-transparent",
                 )}
               >

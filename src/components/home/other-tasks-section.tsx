@@ -1,5 +1,5 @@
 import { TaskListItem } from "@/components/tasks/task-list-item";
-import { HomeSection } from "./section";
+import { HomeSection, type HomeSectionTint } from "./section";
 import type { TaskWithRelations } from "@/lib/tasks/types";
 
 const EMPTY_MESSAGES: Record<string, string> = {
@@ -7,6 +7,13 @@ const EMPTY_MESSAGES: Record<string, string> = {
   今月: "今月期限のタスクはありません",
   期限未定: "期限未定のタスクはありません",
   完了済み: "完了済みのタスクはありません",
+};
+
+const TITLE_TINT: Record<string, HomeSectionTint> = {
+  今週: "pink",
+  今月: "blue",
+  期限未定: "lavender",
+  完了済み: "yellow",
 };
 
 export function OtherTasksSection({
@@ -23,7 +30,7 @@ export function OtherTasksSection({
       count={tasks.length}
       collapsible
       defaultOpen={false}
-      tint="lavender"
+      tint={TITLE_TINT[title]}
     >
       {tasks.map((task) => (
         <TaskListItem key={task.id} task={task} />

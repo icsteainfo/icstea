@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { TaskCheckbox } from "./task-checkbox";
+import { CategoryTag } from "./category-tag";
 import { ProgressBadge } from "@/components/subtasks/progress-badge";
 import { SubtaskMiniList } from "@/components/subtasks/subtask-mini-list";
 import { computeProgress } from "@/lib/subtasks/progress";
@@ -13,20 +14,22 @@ function formatDate(dateStr: string | null) {
   return `${Number(m)}/${Number(d)}`;
 }
 
-const PRIORITY_BADGE: Partial<
-  Record<
-    PriorityLevel,
-    { label: string; variant: "destructive" | "secondary" | "outline"; className?: string }
-  >
-> = {
-  urgent: { label: "優先度: 緊急", variant: "destructive" },
+// 優先度は「用途→色」の使い分け(優先度=イエロー/ピンク系)に沿って、
+// 緊急ほどはっきり強い色になるようにする
+const PRIORITY_BADGE: Partial<Record<PriorityLevel, { label: string; className: string }>> = {
+  urgent: {
+    label: "優先度: 緊急",
+    className: "border-transparent bg-destructive text-white",
+  },
   high: {
     label: "優先度: 高",
-    variant: "outline",
-    className: "border-transparent bg-warning/10 text-warning dark:bg-warning/20",
+    className: "border-transparent bg-[#F0B429] text-[#382B33]",
   },
-  medium: { label: "優先度: 中", variant: "secondary" },
-  low: { label: "優先度: 低", variant: "outline" },
+  medium: {
+    label: "優先度: 中",
+    className: "border-tint-pink-line/60 bg-tint-pink text-foreground",
+  },
+  low: { label: "優先度: 低", className: "" },
 };
 
 export function TaskListItem({ task }: { task: TaskWithRelations }) {
@@ -35,7 +38,7 @@ export function TaskListItem({ task }: { task: TaskWithRelations }) {
   const progress = computeProgress(task.progress_override, task.subtasks);
 
   return (
-    <div className="rounded-lg border bg-background p-3">
+    <div className="shadow-dreamy-sm pop-lift rounded-[22px] border-2 border-border bg-card p-4 hover:border-[color-mix(in_oklch,var(--border),var(--foreground)_12%)]">
       <div className="flex items-start gap-3">
         <div className="pt-1">
           <TaskCheckbox
@@ -45,20 +48,20 @@ export function TaskListItem({ task }: { task: TaskWithRelations }) {
           />
         </div>
 
-        <Link href={`/tasks/${task.id}`} className="flex-1 space-y-1">
+        <Link href={`/tasks/${task.id}`} className="flex-1 space-y-1.5">
           <p
             className={
               isCompleted
                 ? "text-muted-foreground line-through"
-                : "font-medium"
+                : "font-semibold text-foreground"
             }
           >
             {task.title}
           </p>
-          <div className="flex flex-wrap gap-1.5 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs">
             {progress && <ProgressBadge progress={progress} />}
             {priorityBadge && (
-              <Badge variant={priorityBadge.variant} className={priorityBadge.className}>
+              <Badge variant="outline" className={priorityBadge.className}>
                 {priorityBadge.label}
               </Badge>
             )}
@@ -70,9 +73,7 @@ export function TaskListItem({ task }: { task: TaskWithRelations }) {
             {task.due_date && !task.start_date && (
               <Badge variant="outline">期限: {formatDate(task.due_date)}</Badge>
             )}
-            {task.category_name && (
-              <Badge variant="secondary">{task.category_name}</Badge>
-            )}
+            {task.category_name && <CategoryTag name={task.category_name} />}
             <Badge variant="outline">担当: {task.assignee_name}</Badge>
             {task.is_waiting && (
               <Badge variant="outline">

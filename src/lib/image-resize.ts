@@ -4,9 +4,10 @@ const MAX_DIMENSION = 1568;
 
 export async function resizeImageForUpload(
   file: File,
+  maxDimension: number = MAX_DIMENSION,
 ): Promise<{ base64: string; mediaType: "image/png" }> {
   const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, MAX_DIMENSION / Math.max(bitmap.width, bitmap.height));
+  const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
   const width = Math.round(bitmap.width * scale);
   const height = Math.round(bitmap.height * scale);
 

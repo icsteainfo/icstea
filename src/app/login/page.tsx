@@ -1,3 +1,4 @@
+import { Sparkles } from "lucide-react";
 import { login } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,10 +19,13 @@ export default async function LoginPage({
   const { error } = await searchParams;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
+    <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>icsTEA 経営アシスタント</CardTitle>
+          <CardTitle className="flex items-center gap-1.5">
+            <Sparkles className="size-4 text-primary" aria-hidden />
+            icsTEA 経営アシスタント
+          </CardTitle>
           <CardDescription>オーナー用アカウントでログインしてください</CardDescription>
         </CardHeader>
         <CardContent>

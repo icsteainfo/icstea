@@ -12,7 +12,9 @@ import {
 export function NewTaskMenuButton() {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button>＋ タスク追加</Button>} />
+      <DropdownMenuTrigger
+        render={<Button className="pop-lift rounded-full px-4">＋ タスク追加</Button>}
+      />
       <DropdownMenuContent>
         <DropdownMenuItem render={<Link href="/tasks/new">通常のタスクを作成</Link>} />
         <DropdownMenuItem

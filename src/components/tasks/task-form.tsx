@@ -17,9 +17,11 @@ import {
 } from "@/components/ui/select";
 import { RecurrenceEditor } from "@/components/tasks/recurrence-editor";
 import type { Category, Staff, TaskWithRelations } from "@/lib/tasks/types";
+import type { Project } from "@/lib/projects/types";
 import type { PriorityLevel, RecurrenceType } from "@/types/database.types";
 
 const NO_CATEGORY = "__none__";
+const NO_PROJECT = "__none__";
 
 const PRIORITY_LABELS: Record<PriorityLevel, string> = {
   urgent: "緊急",
@@ -33,12 +35,16 @@ export function TaskForm({
   task,
   categories,
   staff,
+  projects,
+  defaultProjectId,
   hideActions,
 }: {
   mode: "create" | "edit";
   task?: TaskWithRelations;
   categories: Category[];
   staff: Staff[];
+  projects: Project[];
+  defaultProjectId?: string;
   hideActions?: boolean;
 }) {
   const router = useRouter();
@@ -48,6 +54,9 @@ export function TaskForm({
   const [memo, setMemo] = useState(task?.memo ?? "");
   const [categoryId, setCategoryId] = useState(
     task?.category_id ?? NO_CATEGORY,
+  );
+  const [projectId, setProjectId] = useState(
+    task?.project_id ?? defaultProjectId ?? NO_PROJECT,
   );
   const [assigneeType, setAssigneeType] = useState<"owner" | "staff">(
     task?.assignee_type ?? "owner",
@@ -121,6 +130,7 @@ export function TaskForm({
         title,
         memo: memo || null,
         category_id: categoryId === NO_CATEGORY ? null : categoryId,
+        project_id: projectId === NO_PROJECT ? null : projectId,
         assignee_type: assigneeType,
         assignee_staff_id: assigneeType === "staff" ? assigneeStaffId : null,
         due_date: dueDate || null,
@@ -185,6 +195,30 @@ export function TaskForm({
             {categories.map((c) => (
               <SelectItem key={c.id} value={c.id}>
                 {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label>関連プロジェクト</Label>
+        <Select
+          items={{
+            [NO_PROJECT]: "未設定",
+            ...Object.fromEntries(projects.map((p) => [p.id, p.name])),
+          }}
+          value={projectId}
+          onValueChange={(v: string | null) => setProjectId(v ?? NO_PROJECT)}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="プロジェクトを選択" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={NO_PROJECT}>未設定</SelectItem>
+            {projects.map((p) => (
+              <SelectItem key={p.id} value={p.id}>
+                {p.name}
               </SelectItem>
             ))}
           </SelectContent>

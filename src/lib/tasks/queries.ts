@@ -21,21 +21,23 @@ import type {
 type Client = SupabaseClient<Database>;
 
 const TASK_WITH_RELATIONS_SELECT =
-  "*, categories(name), staff!assignee_staff_id(name)";
+  "*, categories(name), staff!assignee_staff_id(name), projects(name)";
 
 type TaskRow = Task & {
   categories: { name: string } | null;
   staff: { name: string } | null;
+  projects: { name: string } | null;
 };
 
 function toTaskWithRelationsBase(
   row: TaskRow,
 ): Omit<TaskWithRelations, "subtasks"> {
-  const { categories, staff, ...task } = row;
+  const { categories, staff, projects, ...task } = row;
   return {
     ...task,
     category_name: categories?.name ?? null,
     assignee_name: task.assignee_type === "owner" ? "自分" : (staff?.name ?? "-"),
+    project_name: projects?.name ?? null,
   };
 }
 
@@ -57,6 +59,7 @@ export async function listTasks(
     query = query.eq("assignee_staff_id", filters.assigneeStaffId);
   if (filters.isWaiting !== undefined)
     query = query.eq("is_waiting", filters.isWaiting);
+  if (filters.projectId) query = query.eq("project_id", filters.projectId);
 
   const { data, error } = await query;
   if (error) throw error;
@@ -67,6 +70,36 @@ export async function listTasks(
     tasks.map((t) => t.id),
   );
   return tasks.map((t) => ({ ...t, subtasks: subtasksByTask.get(t.id) ?? [] }));
+}
+
+// プロジェクト一覧・ホーム画面用に、複数プロジェクト分のTodoをまとめて取得する
+export async function listTasksForProjects(
+  supabase: Client,
+  projectIds: string[],
+): Promise<Map<string, TaskWithRelations[]>> {
+  const byProject = new Map<string, TaskWithRelations[]>();
+  if (projectIds.length === 0) return byProject;
+
+  const { data, error } = await supabase
+    .from("tasks")
+    .select(TASK_WITH_RELATIONS_SELECT)
+    .in("project_id", projectIds)
+    .order("due_date", { ascending: true, nullsFirst: false })
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+
+  const tasks = (data as unknown as TaskRow[]).map(toTaskWithRelationsBase);
+  const subtasksByTask = await listSubtasksForTasks(
+    supabase,
+    tasks.map((t) => t.id),
+  );
+  for (const t of tasks) {
+    const withSubtasks = { ...t, subtasks: subtasksByTask.get(t.id) ?? [] };
+    const list = byProject.get(t.project_id!) ?? [];
+    list.push(withSubtasks);
+    byProject.set(t.project_id!, list);
+  }
+  return byProject;
 }
 
 export async function getTask(
@@ -105,6 +138,7 @@ export async function createTask(
       waiting_follow_up_date: input.waiting_follow_up_date || null,
       waiting_note: input.waiting_note || null,
       priority_level: input.priority_level ?? "medium",
+      project_id: input.project_id || null,
     })
     .select()
     .single();
@@ -137,6 +171,8 @@ export async function updateTask(
     patch.waiting_note = input.waiting_note || null;
   if (input.priority_level !== undefined)
     patch.priority_level = input.priority_level;
+  if (input.project_id !== undefined)
+    patch.project_id = input.project_id || null;
 
   const { data, error } = await supabase
     .from("tasks")

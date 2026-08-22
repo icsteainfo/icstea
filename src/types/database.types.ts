@@ -13,6 +13,15 @@ export type RecurrenceType =
   | "monthly_last_day";
 export type AttachmentKind = "file" | "url";
 export type SubtaskStatus = "open" | "completed";
+export type ProjectPhase =
+  | "concept"
+  | "researching"
+  | "preparing"
+  | "active"
+  | "operating"
+  | "on_hold"
+  | "completed";
+export type ProjectNoteType = "text" | "diagram";
 export type Channel = "airregi" | "uber_eats" | "rocket_now" | "stores";
 export type CampaignType =
   | "instagram_post"
@@ -167,6 +176,7 @@ export interface Database {
           related_product_id: string | null;
           stores_order_id: string | null;
           progress_override: number | null;
+          project_id: string | null;
           source: TaskSource;
           created_at: string;
           updated_at: string;
@@ -193,6 +203,7 @@ export interface Database {
           related_product_id?: string | null;
           stores_order_id?: string | null;
           progress_override?: number | null;
+          project_id?: string | null;
           source?: TaskSource;
           created_at?: string;
           updated_at?: string;
@@ -225,6 +236,81 @@ export interface Database {
             columns: ["related_product_id"];
             isOneToOne: false;
             referencedRelation: "products";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tasks_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      projects: {
+        Row: {
+          id: string;
+          name: string;
+          category_id: string | null;
+          purpose: string | null;
+          memo: string | null;
+          phase: ProjectPhase;
+          start_date: string | null;
+          due_date: string | null;
+          end_date: string | null;
+          final_review: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          category_id?: string | null;
+          purpose?: string | null;
+          memo?: string | null;
+          phase?: ProjectPhase;
+          start_date?: string | null;
+          due_date?: string | null;
+          end_date?: string | null;
+          final_review?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["projects"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "projects_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      project_notes: {
+        Row: {
+          id: string;
+          project_id: string;
+          note_type: ProjectNoteType;
+          content: string | null;
+          diagram: Record<string, unknown> | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          note_type?: ProjectNoteType;
+          content?: string | null;
+          diagram?: Record<string, unknown> | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["project_notes"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "project_notes_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
             referencedColumns: ["id"];
           },
         ];
@@ -833,6 +919,34 @@ export interface Database {
             referencedColumns: ["id"];
           },
         ];
+      };
+      monthly_reviews: {
+        Row: {
+          id: string;
+          month: string;
+          pl_image_storage_path: string | null;
+          pl_image_file_name: string | null;
+          pl_line_items: Record<string, unknown>[];
+          meeting_notes: string | null;
+          ai_plan: Record<string, unknown> | null;
+          ai_plan_generated_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          month: string;
+          pl_image_storage_path?: string | null;
+          pl_image_file_name?: string | null;
+          pl_line_items?: Record<string, unknown>[];
+          meeting_notes?: string | null;
+          ai_plan?: Record<string, unknown> | null;
+          ai_plan_generated_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["monthly_reviews"]["Insert"]>;
+        Relationships: [];
       };
     };
     Views: Record<string, never>;

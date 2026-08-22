@@ -1,11 +1,13 @@
 import { TaskListItem } from "@/components/tasks/task-list-item";
 import { SubtaskTodayRow } from "@/components/subtasks/subtask-today-row";
 import { HomeSection } from "./section";
+import { StarMotif } from "./motifs";
 import type { TodayItem } from "@/lib/tasks/classify";
 
 export function UrgentSection({ items }: { items: TodayItem[] }) {
   return (
-    <div className="rounded-xl border-2 border-destructive/40 bg-destructive/5 p-4">
+    <div className="shadow-dreamy relative isolate rounded-3xl border-2 border-destructive/50 bg-destructive/8 p-4">
+      <StarMotif className="pop-motif pop-twinkle -top-2 -right-2 size-8 text-destructive/70" />
       <HomeSection
         title="⚠️ 要対応"
         description="期限超過・本日期限・優先度が緊急のもの、今日やるべきことをまとめて表示しています"

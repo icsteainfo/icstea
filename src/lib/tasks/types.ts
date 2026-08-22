@@ -29,6 +29,7 @@ export type Task = {
   related_product_id: string | null;
   stores_order_id: string | null;
   progress_override: number | null;
+  project_id: string | null;
   source: TaskSource;
   created_at: string;
   updated_at: string;
@@ -38,6 +39,7 @@ export type Task = {
 export type TaskWithRelations = Task & {
   category_name: string | null;
   assignee_name: string;
+  project_name: string | null;
   subtasks: SubtaskWithRelations[];
 };
 
@@ -61,6 +63,7 @@ export type TaskListFilters = {
   assigneeType?: AssigneeType;
   assigneeStaffId?: string;
   isWaiting?: boolean;
+  projectId?: string;
 };
 
 // 毎週の場合: { weekday: 0-6 (0=日曜) }

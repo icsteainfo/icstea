@@ -4,6 +4,7 @@ const taskFieldsSchema = z.object({
   title: z.string().trim().min(1, "タスク名を入力してください").max(200),
   memo: z.string().trim().max(2000).optional().nullable(),
   category_id: z.uuid().optional().nullable(),
+  project_id: z.uuid().optional().nullable(),
   assignee_type: z.enum(["owner", "staff"]),
   assignee_staff_id: z.uuid().optional().nullable(),
   due_date: z

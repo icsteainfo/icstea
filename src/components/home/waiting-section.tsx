@@ -11,7 +11,7 @@ export function WaitingSection({ tasks }: { tasks: TaskWithRelations[] }) {
       count={tasks.length}
       collapsible
       defaultOpen
-      tint="lavender"
+      tint="green"
     >
       {tasks.map((task) => (
         <TaskListItem key={task.id} task={task} />

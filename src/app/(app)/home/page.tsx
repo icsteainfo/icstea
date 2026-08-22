@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { listTasks } from "@/lib/tasks/queries";
+import { listProjects } from "@/lib/projects/queries";
 import {
   bucketOtherTasks,
   buildTodayItems,
@@ -12,9 +13,17 @@ import { UrgentSection } from "@/components/home/urgent-section";
 import { DelegatedSection } from "@/components/home/delegated-section";
 import { WaitingSection } from "@/components/home/waiting-section";
 import { OtherTasksSection } from "@/components/home/other-tasks-section";
+import { ActiveProjectsSection } from "@/components/home/active-projects-section";
 import { InventoryAlertSection } from "@/components/home/inventory-alert-section";
 import { InventoryCheckAlertSection } from "@/components/home/inventory-check-alert-section";
 import { NewTaskMenuButton } from "@/components/tasks/new-task-menu-button";
+import {
+  StarMotif,
+  HeartMotif,
+  SparkleMotif,
+  CloudMotif,
+  RainbowMotif,
+} from "@/components/home/motifs";
 import { generateDueRecurringInstances } from "@/lib/tasks/recurrence";
 import {
   listLatestInventoryCheckAlerts,
@@ -27,10 +36,11 @@ export default async function HomePage() {
   await generateDueRecurringInstances(supabase);
   const today = getTodayDateString();
 
-  const [tasks, products, inventoryCheckAlerts] = await Promise.all([
+  const [tasks, products, inventoryCheckAlerts, activeProjects] = await Promise.all([
     listTasks(supabase, {}),
     listProductsWithLatestStock(supabase),
     listLatestInventoryCheckAlerts(supabase),
+    listProjects(supabase, { excludePhases: ["completed", "on_hold"] }),
   ]);
 
   const urgentItems = buildTodayItems(tasks, today);
@@ -47,12 +57,24 @@ export default async function HomePage() {
   const completedTasks = bucketOtherTasks(tasks, "completed", today);
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">ホーム</h1>
+    <div className="relative isolate -mx-4 -my-6 space-y-8 bg-background px-4 py-6">
+      {/* 装飾: ページ上部に控えめな虹のアーチ */}
+      <RainbowMotif
+        aria-hidden
+        className="pop-motif top-0 left-1/2 hidden h-20 w-72 -translate-x-1/2 -translate-y-6 opacity-80 sm:block"
+      />
+
+      <div className="relative flex items-center justify-between gap-3">
+        <h1 className="flex items-center gap-2 text-2xl font-bold text-foreground">
+          <StarMotif className="pop-twinkle size-6 text-[#FF8FBC]" />
+          ホーム
+          <SparkleMotif className="pop-twinkle size-4 text-[#CDB7F6]" />
+        </h1>
         <NewTaskMenuButton />
       </div>
+
       <UrgentSection items={urgentItems} />
+      <ActiveProjectsSection projects={activeProjects} />
       <InventoryCheckAlertSection alerts={inventoryCheckAlerts} />
       <InventoryAlertSection products={products} />
       <DelegatedSection tasks={delegatedTasks} />
@@ -61,6 +83,16 @@ export default async function HomePage() {
       <OtherTasksSection title="今月" tasks={monthTasks} />
       <OtherTasksSection title="期限未定" tasks={undatedTasks} />
       <OtherTasksSection title="完了済み" tasks={completedTasks} />
+
+      {/* 装飾: 余白にそっと添えるハートと雲 */}
+      <HeartMotif
+        aria-hidden
+        className="pop-motif top-24 right-0 hidden size-8 text-[#FFD2E3] opacity-70 xl:block"
+      />
+      <CloudMotif
+        aria-hidden
+        className="pop-motif bottom-10 left-0 hidden size-14 text-[#E4F6FD] opacity-90 xl:block"
+      />
     </div>
   );
 }
