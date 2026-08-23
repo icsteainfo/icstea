@@ -5,18 +5,37 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { ProjectAttachmentList } from "./project-attachment-list";
+import { ProjectAttachmentUploader } from "./project-attachment-uploader";
+import type { ProjectAttachment } from "@/lib/project-attachments/types";
 
 export function FinalReviewEditor({
   projectId,
   finalReview,
+  attachments,
 }: {
   projectId: string;
   finalReview: string | null;
+  attachments: ProjectAttachment[];
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(finalReview ?? "");
   const [saving, setSaving] = useState(false);
+  const [showUploader, setShowUploader] = useState(false);
+
+  const attachmentsSection = (
+    <div className="space-y-2 border-t pt-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-muted-foreground">添付ファイル</h3>
+        <Button type="button" variant="ghost" size="xs" onClick={() => setShowUploader((v) => !v)}>
+          {showUploader ? "閉じる" : "＋ 添付を追加"}
+        </Button>
+      </div>
+      <ProjectAttachmentList attachments={attachments} />
+      {showUploader && <ProjectAttachmentUploader projectId={projectId} />}
+    </div>
+  );
 
   async function handleSave() {
     setSaving(true);
@@ -53,6 +72,7 @@ export function FinalReviewEditor({
             プロジェクトが完了したら、振り返りをここに記録できます
           </p>
         )}
+        {attachmentsSection}
       </div>
     );
   }
@@ -83,6 +103,7 @@ export function FinalReviewEditor({
           保存
         </Button>
       </div>
+      {attachmentsSection}
     </div>
   );
 }

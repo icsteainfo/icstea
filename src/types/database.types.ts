@@ -315,6 +315,53 @@ export interface Database {
           },
         ];
       };
+      project_attachments: {
+        Row: {
+          id: string;
+          project_id: string;
+          note_id: string | null;
+          kind: AttachmentKind;
+          storage_path: string | null;
+          file_name: string | null;
+          mime_type: string | null;
+          size_bytes: number | null;
+          external_url: string | null;
+          label: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          note_id?: string | null;
+          kind: AttachmentKind;
+          storage_path?: string | null;
+          file_name?: string | null;
+          mime_type?: string | null;
+          size_bytes?: number | null;
+          external_url?: string | null;
+          label?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["project_attachments"]["Insert"]
+        >;
+        Relationships: [
+          {
+            foreignKeyName: "project_attachments_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "project_attachments_note_id_fkey";
+            columns: ["note_id"];
+            isOneToOne: false;
+            referencedRelation: "project_notes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       attachments: {
         Row: {
           id: string;

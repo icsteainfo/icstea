@@ -8,6 +8,7 @@ import type {
 } from "@/lib/validation/project";
 import { deleteTask, listTasks, listTasksForProjects } from "@/lib/tasks/queries";
 import { listSubtasks } from "@/lib/subtasks/queries";
+import { listProjectAttachments } from "@/lib/project-attachments/queries";
 import type {
   Project,
   ProjectListFilters,
@@ -69,11 +70,12 @@ export async function getProject(
   if (!data) return null;
 
   const project = toProjectBase(data as unknown as ProjectRow);
-  const [tasks, notes] = await Promise.all([
+  const [tasks, notes, attachments] = await Promise.all([
     listTasks(supabase, { projectId: id }),
     listProjectNotes(supabase, id),
+    listProjectAttachments(supabase, id),
   ]);
-  return { ...project, tasks, notes };
+  return { ...project, tasks, notes, attachments };
 }
 
 export async function createProject(

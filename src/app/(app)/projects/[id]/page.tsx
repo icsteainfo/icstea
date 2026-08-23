@@ -81,7 +81,11 @@ export default async function ProjectDetailPage({
 
       <section className="space-y-2">
         <h2 className="text-lg font-semibold">経過感想</h2>
-        <ProjectNotes projectId={project.id} initialNotes={project.notes} />
+        <ProjectNotes
+          projectId={project.id}
+          initialNotes={project.notes}
+          attachments={project.attachments}
+        />
       </section>
 
       <section className="space-y-2">
@@ -110,7 +114,11 @@ export default async function ProjectDetailPage({
         )}
       </section>
 
-      <FinalReviewEditor projectId={project.id} finalReview={project.final_review} />
+      <FinalReviewEditor
+        projectId={project.id}
+        finalReview={project.final_review}
+        attachments={project.attachments.filter((a) => a.note_id === null)}
+      />
     </div>
   );
 }

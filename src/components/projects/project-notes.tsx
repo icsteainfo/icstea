@@ -8,7 +8,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DiagramView } from "./diagram/diagram-view";
 import { DiagramNoteDialog } from "./diagram-note-dialog";
+import { ProjectAttachmentList } from "./project-attachment-list";
+import { ProjectAttachmentUploader } from "./project-attachment-uploader";
 import type { ProjectNote } from "@/lib/projects/types";
+import type { ProjectAttachment } from "@/lib/project-attachments/types";
 
 function formatDateTime(dateStr: string) {
   const d = new Date(dateStr);
@@ -20,15 +23,18 @@ function formatDateTime(dateStr: string) {
 export function ProjectNotes({
   projectId,
   initialNotes,
+  attachments,
 }: {
   projectId: string;
   initialNotes: ProjectNote[];
+  attachments: ProjectAttachment[];
 }) {
   const router = useRouter();
   const [notes, setNotes] = useState(initialNotes);
   const [mode, setMode] = useState<"text" | "diagram">("text");
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [expandedNoteId, setExpandedNoteId] = useState<string | null>(null);
 
   // router.refresh()でサーバーから新しいinitialNotesが渡されたら、ローカル状態を追従させる
   const [prevInitialNotes, setPrevInitialNotes] = useState(initialNotes);
@@ -136,9 +142,32 @@ export function ProjectNotes({
                 </div>
               )}
 
-              <p className="mt-1 text-xs text-muted-foreground">
-                {formatDateTime(note.created_at)}
-              </p>
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <p className="text-xs text-muted-foreground">{formatDateTime(note.created_at)}</p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  onClick={() => setExpandedNoteId(expandedNoteId === note.id ? null : note.id)}
+                >
+                  {expandedNoteId === note.id ? "閉じる" : "＋ 添付"}
+                </Button>
+              </div>
+
+              {(() => {
+                const noteAttachments = attachments.filter((a) => a.note_id === note.id);
+                if (noteAttachments.length === 0 && expandedNoteId !== note.id) return null;
+                return (
+                  <div className="mt-1.5 space-y-2">
+                    {noteAttachments.length > 0 && (
+                      <ProjectAttachmentList attachments={noteAttachments} />
+                    )}
+                    {expandedNoteId === note.id && (
+                      <ProjectAttachmentUploader projectId={projectId} noteId={note.id} />
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           ))}
         </div>

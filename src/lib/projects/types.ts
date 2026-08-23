@@ -1,5 +1,6 @@
 import type { ProjectNoteType, ProjectPhase } from "@/types/database.types";
 import type { TaskWithRelations } from "@/lib/tasks/types";
+import type { ProjectAttachment } from "@/lib/project-attachments/types";
 
 export type Project = {
   id: string;
@@ -56,6 +57,7 @@ export type ProjectWithTasks = Project & {
   category_name: string | null;
   tasks: TaskWithRelations[];
   notes: ProjectNote[];
+  attachments: ProjectAttachment[];
 };
 
 export type ProjectListFilters = {
