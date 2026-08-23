@@ -3,16 +3,19 @@ import { createClient } from "@/lib/supabase/server";
 import { listProducts } from "@/lib/inventory/queries";
 import { Button } from "@/components/ui/button";
 import {
-  MaterialCategoryList,
   type MaterialCategoryGroup,
 } from "@/components/costing/material-category-list";
+import { MaterialsOrganizePanel } from "@/components/costing/materials-organize-panel";
+import { HiddenMaterialsSection } from "@/components/costing/hidden-materials-section";
 import { MATERIAL_CATEGORIES, OTHER_MATERIAL_CATEGORY } from "@/lib/costing/types";
 import { unitCost } from "@/lib/costing/calculations";
 import type { Product } from "@/lib/inventory/types";
 
 export default async function CostingMaterialsPage() {
   const supabase = await createClient();
-  const products = await listProducts(supabase);
+  const allProducts = await listProducts(supabase);
+  const products = allProducts.filter((p) => p.show_in_costing);
+  const hiddenProducts = allProducts.filter((p) => !p.show_in_costing);
 
   const itemsByCategory = new Map<string, Product[]>();
   for (const product of products) {
@@ -53,12 +56,19 @@ export default async function CostingMaterialsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          カテゴリーごとにグループ化して表示しています。材料名をタップすると仕入価格などの詳細・編集画面に移動します(「在庫」の商品マスタと共通です)。
+          カテゴリーごとにグループ化して表示しています。材料名をタップすると仕入価格などの詳細・編集画面に移動します(「在庫」の商品マスタと共通です)。「整理する」で複数選択し、原価計算に使わない商品をまとめて非表示にできます。
         </p>
         <Button variant="outline" render={<Link href="/products/new">＋ 原材料を追加</Link>} />
       </div>
 
-      <MaterialCategoryList groups={groups} />
+      <MaterialsOrganizePanel groups={groups} />
+
+      <HiddenMaterialsSection
+        items={hiddenProducts
+          .slice()
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map((p) => ({ id: p.id, name: p.name }))}
+      />
     </div>
   );
 }

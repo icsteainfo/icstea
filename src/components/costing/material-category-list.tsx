@@ -22,6 +22,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVerticalIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export type MaterialCategoryItem = { id: string; name: string; hasCost: boolean };
 
@@ -31,7 +32,17 @@ export type MaterialCategoryGroup = {
   items: MaterialCategoryItem[];
 };
 
-function MaterialChip({ item }: { item: MaterialCategoryItem }) {
+function MaterialChip({
+  item,
+  organizing,
+  selected,
+  onToggleSelect,
+}: {
+  item: MaterialCategoryItem;
+  organizing: boolean;
+  selected: boolean;
+  onToggleSelect: (id: string) => void;
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: item.id });
 
@@ -39,6 +50,17 @@ function MaterialChip({ item }: { item: MaterialCategoryItem }) {
     transform: CSS.Transform.toString(transform),
     transition,
   };
+
+  const label = (
+    <>
+      {!item.hasCost && (
+        <span className="mr-1 font-semibold text-destructive" title="仕入価格が未設定です">
+          ⚠️
+        </span>
+      )}
+      {item.name}
+    </>
+  );
 
   return (
     <div
@@ -57,19 +79,31 @@ function MaterialChip({ item }: { item: MaterialCategoryItem }) {
       >
         <GripVerticalIcon className="h-3.5 w-3.5" />
       </button>
-      <Link href={`/products/${item.id}`} className="hover:underline">
-        {!item.hasCost && (
-          <span className="mr-1 font-semibold text-destructive" title="仕入価格が未設定です">
-            ⚠️
-          </span>
-        )}
-        {item.name}
-      </Link>
+      {organizing ? (
+        <label className="flex cursor-pointer items-center gap-1.5">
+          <Checkbox checked={selected} onCheckedChange={() => onToggleSelect(item.id)} />
+          {label}
+        </label>
+      ) : (
+        <Link href={`/products/${item.id}?from=materials`} className="hover:underline">
+          {label}
+        </Link>
+      )}
     </div>
   );
 }
 
-function CategorySection({ group }: { group: MaterialCategoryGroup }) {
+function CategorySection({
+  group,
+  organizing,
+  selected,
+  onToggleSelect,
+}: {
+  group: MaterialCategoryGroup;
+  organizing: boolean;
+  selected: Set<string>;
+  onToggleSelect: (id: string) => void;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(true);
   const [items, setItems] = useState(group.items);
@@ -132,7 +166,13 @@ function CategorySection({ group }: { group: MaterialCategoryGroup }) {
             >
               <div className="flex flex-wrap gap-2">
                 {items.map((item) => (
-                  <MaterialChip key={item.id} item={item} />
+                  <MaterialChip
+                    key={item.id}
+                    item={item}
+                    organizing={organizing}
+                    selected={selected.has(item.id)}
+                    onToggleSelect={onToggleSelect}
+                  />
                 ))}
               </div>
             </SortableContext>
@@ -143,7 +183,17 @@ function CategorySection({ group }: { group: MaterialCategoryGroup }) {
   );
 }
 
-export function MaterialCategoryList({ groups }: { groups: MaterialCategoryGroup[] }) {
+export function MaterialCategoryList({
+  groups,
+  organizing = false,
+  selected,
+  onToggleSelect,
+}: {
+  groups: MaterialCategoryGroup[];
+  organizing?: boolean;
+  selected?: Set<string>;
+  onToggleSelect?: (id: string) => void;
+}) {
   const visibleGroups = groups.filter((g) => g.items.length > 0);
 
   if (visibleGroups.length === 0) {
@@ -157,7 +207,13 @@ export function MaterialCategoryList({ groups }: { groups: MaterialCategoryGroup
   return (
     <div className="space-y-3">
       {visibleGroups.map((group) => (
-        <CategorySection key={group.name} group={group} />
+        <CategorySection
+          key={group.name}
+          group={group}
+          organizing={organizing}
+          selected={selected ?? new Set()}
+          onToggleSelect={onToggleSelect ?? (() => {})}
+        />
       ))}
     </div>
   );

@@ -30,6 +30,8 @@ export type Product = {
   display_color: string | null;
   material_category: string | null;
   material_sort_order: number;
+  show_in_costing: boolean;
+  merged_into_product_id: string | null;
   created_at: string;
   updated_at: string;
 };

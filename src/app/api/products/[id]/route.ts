@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import {
-  deactivateProduct,
+  deactivateProductGuarded,
   getProduct,
   updateProduct,
 } from "@/lib/inventory/queries";
@@ -39,6 +39,12 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 export async function DELETE(_request: NextRequest, { params }: Params) {
   const { id } = await params;
   const supabase = await createClient();
-  await deactivateProduct(supabase, id);
+  const result = await deactivateProductGuarded(supabase, id);
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: "この商品は使用中のため削除できません。統合をご利用ください。", usage: result.usage },
+      { status: 409 },
+    );
+  }
   return NextResponse.json({ ok: true });
 }

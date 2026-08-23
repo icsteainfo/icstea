@@ -17,3 +17,14 @@ export type ProductInput = z.infer<typeof productInputSchema>;
 
 export const productUpdateSchema = productInputSchema.partial();
 export type ProductUpdateInput = z.infer<typeof productUpdateSchema>;
+
+export const productVisibilityBulkSchema = z.object({
+  ids: z.array(z.string().uuid()).min(1, "商品を選択してください"),
+  show_in_costing: z.boolean(),
+});
+export type ProductVisibilityBulkInput = z.infer<typeof productVisibilityBulkSchema>;
+
+export const mergeProductSchema = z.object({
+  targetProductId: z.string().uuid(),
+});
+export type MergeProductInput = z.infer<typeof mergeProductSchema>;

@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database.types";
 import type { ProductInput, ProductUpdateInput } from "@/lib/validation/product";
+import { getProductUsage } from "@/lib/costing/product-usage";
+import type { ProductUsage } from "@/lib/costing/types";
 import type {
   InventoryCheckAlert,
   InventoryCheckResult,
@@ -137,6 +139,35 @@ export async function deactivateProduct(
     .from("products")
     .update({ is_active: false })
     .eq("id", id);
+  if (error) throw error;
+}
+
+// レシピ・カテゴリー初期設定・在庫データなどから使用中の商品は、参照先を残したまま
+// 削除できないようにする(統合したい場合はmergeProductsで参照を付け替えてから呼ばれる)。
+export async function deactivateProductGuarded(
+  supabase: Client,
+  id: string,
+): Promise<{ ok: true } | { ok: false; usage: ProductUsage }> {
+  const usage = await getProductUsage(supabase, id);
+  if (!usage.isUnused) {
+    return { ok: false, usage };
+  }
+  await deactivateProduct(supabase, id);
+  return { ok: true };
+}
+
+// 原価計算(「原材料・資材」一覧)に表示するかどうかを一括切り替える。
+// 商品マスタ・在庫管理からは削除しない(is_activeとは独立したフラグ)。
+export async function setProductsCostingVisibility(
+  supabase: Client,
+  ids: string[],
+  show: boolean,
+): Promise<void> {
+  if (ids.length === 0) return;
+  const { error } = await supabase
+    .from("products")
+    .update({ show_in_costing: show })
+    .in("id", ids);
   if (error) throw error;
 }
 

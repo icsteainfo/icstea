@@ -421,6 +421,8 @@ export interface Database {
           display_color: string | null;
           material_category: string | null;
           material_sort_order: number;
+          show_in_costing: boolean;
+          merged_into_product_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -444,6 +446,8 @@ export interface Database {
           display_color?: string | null;
           material_category?: string | null;
           material_sort_order?: number;
+          show_in_costing?: boolean;
+          merged_into_product_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -593,6 +597,92 @@ export interface Database {
             columns: ["intermediate_recipe_id"];
             isOneToOne: false;
             referencedRelation: "intermediate_recipes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      recipe_category_defaults: {
+        Row: {
+          id: string;
+          category: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          category: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["recipe_category_defaults"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      recipe_category_default_variants: {
+        Row: {
+          id: string;
+          category_default_id: string;
+          hot_ice: "HOT" | "ICE" | null;
+          size: string;
+          list_price: number | null;
+          cup_product_id: string | null;
+          lid_product_id: string | null;
+          straw_product_id: string | null;
+          sleeve_product_id: string | null;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          category_default_id: string;
+          hot_ice?: "HOT" | "ICE" | null;
+          size: string;
+          list_price?: number | null;
+          cup_product_id?: string | null;
+          lid_product_id?: string | null;
+          straw_product_id?: string | null;
+          sleeve_product_id?: string | null;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["recipe_category_default_variants"]["Insert"]
+        >;
+        Relationships: [
+          {
+            foreignKeyName: "recipe_category_default_variants_category_default_id_fkey";
+            columns: ["category_default_id"];
+            isOneToOne: false;
+            referencedRelation: "recipe_category_defaults";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recipe_category_default_variants_cup_product_id_fkey";
+            columns: ["cup_product_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recipe_category_default_variants_lid_product_id_fkey";
+            columns: ["lid_product_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recipe_category_default_variants_straw_product_id_fkey";
+            columns: ["straw_product_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recipe_category_default_variants_sleeve_product_id_fkey";
+            columns: ["sleeve_product_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
             referencedColumns: ["id"];
           },
         ];

@@ -9,6 +9,7 @@ const TABS = [
   { href: "/costing/analysis", label: "原価分析" },
   { href: "/costing/materials", label: "原材料・資材" },
   { href: "/costing/recipes", label: "中間レシピ" },
+  { href: "/costing/recipe-categories", label: "カテゴリー初期設定" },
 ];
 
 export default function CostingLayout({

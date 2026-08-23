@@ -84,3 +84,44 @@ export const MATERIAL_CATEGORIES: { name: string; emoji: string }[] = [
   { name: "トッピング・その他", emoji: "🧋" },
 ];
 export const OTHER_MATERIAL_CATEGORY = { name: "未分類", emoji: "❓" };
+
+// ---------- カテゴリー初期設定(recipe_category_defaults) ----------
+
+export type RecipeCategoryDefaultVariant = {
+  id: string;
+  category_default_id: string;
+  hot_ice: "HOT" | "ICE" | null;
+  size: string;
+  list_price: number | null;
+  cup_product_id: string | null;
+  lid_product_id: string | null;
+  straw_product_id: string | null;
+  sleeve_product_id: string | null;
+  sort_order: number;
+};
+
+export type RecipeCategoryDefault = {
+  id: string;
+  category: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type RecipeCategoryDefaultWithVariants = RecipeCategoryDefault & {
+  variants: RecipeCategoryDefaultVariant[];
+};
+
+// ---------- 商品の使用状況(重複統合・削除の安全確認用) ----------
+
+export type ProductUsageRef = { id: string; name: string };
+
+export type ProductUsage = {
+  menuItemIngredients: { count: number; refs: ProductUsageRef[] };
+  intermediateRecipeIngredients: { count: number; refs: ProductUsageRef[] };
+  categoryDefaultVariants: { count: number; refs: ProductUsageRef[] };
+  stockSnapshots: number;
+  inventoryCheckResults: number;
+  tasks: number;
+  priceHistory: number;
+  isUnused: boolean;
+};

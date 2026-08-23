@@ -58,3 +58,26 @@ export const menuItemSaveSchema = z.object({
   ingredients: z.array(menuItemIngredientInputSchema).optional(),
 });
 export type MenuItemSaveInput = z.infer<typeof menuItemSaveSchema>;
+
+export const recipeCategoryDefaultVariantInputSchema = z.object({
+  hot_ice: z.enum(["HOT", "ICE"]).nullable(),
+  size: z.string().trim().min(1, "サイズを入力してください").max(20),
+  list_price: z.number().min(0).nullable(),
+  cup_product_id: z.string().uuid().nullable(),
+  lid_product_id: z.string().uuid().nullable(),
+  straw_product_id: z.string().uuid().nullable(),
+  sleeve_product_id: z.string().uuid().nullable(),
+});
+export type RecipeCategoryDefaultVariantFormInput = z.infer<
+  typeof recipeCategoryDefaultVariantInputSchema
+>;
+
+export const recipeCategoryDefaultSaveSchema = z.object({
+  variants: z.array(recipeCategoryDefaultVariantInputSchema),
+});
+export type RecipeCategoryDefaultSaveInput = z.infer<typeof recipeCategoryDefaultSaveSchema>;
+
+export const applyCategoryDefaultsSchema = z.object({
+  menuItemIds: z.array(z.string().uuid()).min(1, "反映する商品を選択してください"),
+});
+export type ApplyCategoryDefaultsInput = z.infer<typeof applyCategoryDefaultsSchema>;

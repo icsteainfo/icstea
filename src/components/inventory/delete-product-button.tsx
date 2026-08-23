@@ -13,11 +13,37 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import type { ProductUsage } from "@/lib/costing/types";
+import { backOrPush } from "@/lib/navigation";
 
-export function DeleteProductButton({ productId }: { productId: string }) {
+function usageSummaryLines(usage: ProductUsage): string[] {
+  const lines: string[] = [];
+  if (usage.menuItemIngredients.count > 0) lines.push(`ドリンクレシピ: ${usage.menuItemIngredients.count}件`);
+  if (usage.intermediateRecipeIngredients.count > 0)
+    lines.push(`中間レシピ: ${usage.intermediateRecipeIngredients.count}件`);
+  if (usage.categoryDefaultVariants.count > 0)
+    lines.push(`カテゴリー初期設定: ${usage.categoryDefaultVariants.count}件`);
+  if (usage.stockSnapshots > 0) lines.push(`在庫データ: ${usage.stockSnapshots}件`);
+  if (usage.inventoryCheckResults > 0) lines.push(`棚卸し履歴: ${usage.inventoryCheckResults}件`);
+  if (usage.tasks > 0) lines.push(`関連タスク: ${usage.tasks}件`);
+  if (usage.priceHistory > 0) lines.push(`仕入価格の履歴: ${usage.priceHistory}件`);
+  return lines;
+}
+
+export function DeleteProductButton({
+  productId,
+  redirectTo = "/products",
+  usage,
+}: {
+  productId: string;
+  redirectTo?: string;
+  usage?: ProductUsage;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  const blocked = usage != null && !usage.isUnused;
 
   async function handleDelete() {
     setDeleting(true);
@@ -25,12 +51,14 @@ export function DeleteProductButton({ productId }: { productId: string }) {
       const res = await fetch(`/api/products/${productId}`, {
         method: "DELETE",
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? "削除に失敗しました");
+      }
       toast.success("商品を削除しました");
-      router.push("/products");
-      router.refresh();
-    } catch {
-      toast.error("削除に失敗しました");
+      backOrPush(router, redirectTo);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "削除に失敗しました");
     } finally {
       setDeleting(false);
       setOpen(false);
@@ -48,16 +76,25 @@ export function DeleteProductButton({ productId }: { productId: string }) {
       />
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>この商品を削除しますか？</DialogTitle>
+          <DialogTitle>この商品を削除しますか?</DialogTitle>
           <DialogDescription>
-            過去の在庫記録は残りますが、一覧には表示されなくなります。
+            {blocked ? (
+              <span className="space-y-1 block">
+                <span className="block">
+                  この商品は使用中のため削除できません。統合する場合は下の「統合」をご利用ください。
+                </span>
+                <span className="block">{usageSummaryLines(usage).join(" / ")}</span>
+              </span>
+            ) : (
+              "過去の在庫記録は残りますが、一覧には表示されなくなります。"
+            )}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
             キャンセル
           </Button>
-          <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+          <Button variant="destructive" onClick={handleDelete} disabled={deleting || blocked}>
             削除する
           </Button>
         </DialogFooter>

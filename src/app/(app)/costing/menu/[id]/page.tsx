@@ -9,6 +9,7 @@ import {
   listMenuItemsForCosting,
   loadCostingData,
 } from "@/lib/costing/queries";
+import { applyCategoryDefaults, getRecipeCategoryDefault } from "@/lib/costing/category-defaults-queries";
 import { MenuItemForm } from "@/components/costing/menu-item-form";
 import { CostingDeleteButton } from "@/components/costing/costing-delete-button";
 import { MenuGroupDetail, type VariantGroup } from "@/components/costing/menu-group-detail";
@@ -45,10 +46,21 @@ export default async function EditMenuItemPage({
   if (menuItem.parent_menu_item_id === null) {
     let variants = await getVariantsWithIngredients(supabase, id);
 
-    // バリエーションが1件もない商品を開いた時は、基本形の6種類をその場で自動作成する
-    // (「＋一括作成」ボタンを押さなくても、開いた時点で最初から6個並んでいる状態にするため)。
+    // バリエーションが1件もない商品を開いた時は、その場で自動作成する
+    // (「＋一括作成」ボタンを押さなくても、開いた時点で最初から並んでいる状態にするため)。
+    // カテゴリー初期設定があればそのサイズ・HOT/ICE・価格・容器で作成し、無ければ
+    // 従来通りHOT/ICE×S/M/Lの6種類を作成する。
     if (variants.length === 0) {
-      await createStandardVariants(supabase, id, menuItem.name);
+      const categoryDefault = menuItem.recipe_category
+        ? await getRecipeCategoryDefault(supabase, menuItem.recipe_category)
+        : null;
+      if (categoryDefault && categoryDefault.variants.length > 0) {
+        await applyCategoryDefaults(supabase, menuItem.recipe_category as string, [
+          { id, name: menuItem.name },
+        ]);
+      } else {
+        await createStandardVariants(supabase, id, menuItem.name);
+      }
       variants = await getVariantsWithIngredients(supabase, id);
     }
 
