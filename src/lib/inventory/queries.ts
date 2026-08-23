@@ -231,6 +231,26 @@ export async function logProductEvent(
   return data as unknown as Product;
 }
 
+// 「発注した」を記録するのと同時に、その商品にひもづく未完了の「発注する」タスクがあれば
+// 完了にする(発注Todo作成・完了の仕組みをそのまま再利用するため。日付は既にlogProductEventで
+// 記録済みなので、/api/tasks/[id]/complete のように再度last_ordered_atを更新することはしない)。
+export async function logOrderEvent(
+  supabase: Client,
+  id: string,
+  onDate: string,
+): Promise<Product> {
+  const product = await logProductEvent(supabase, id, "ordered", onDate);
+  const openTask = await findOpenReorderTask(supabase, id);
+  if (openTask) {
+    const { error } = await supabase
+      .from("tasks")
+      .update({ status: "completed", completed_at: new Date().toISOString() })
+      .eq("id", openTask.id);
+    if (error) throw error;
+  }
+  return product;
+}
+
 // 指定した商品名のうち、まだ商品マスタに登録されていないものを
 // デフォルト値(リードタイム14日・安全在庫0)で登録する。
 // 戻り値は「商品名 → 商品」のマップ(既存・新規どちらも含む)。

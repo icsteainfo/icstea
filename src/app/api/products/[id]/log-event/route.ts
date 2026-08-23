@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { logProductEvent } from "@/lib/inventory/queries";
+import { logOrderEvent, logProductEvent } from "@/lib/inventory/queries";
 import { getTodayDateString } from "@/lib/date";
 
 type Params = { params: Promise<{ id: string }> };
@@ -14,11 +14,9 @@ export async function POST(request: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "不正な種類です" }, { status: 400 });
   }
 
-  const product = await logProductEvent(
-    supabase,
-    id,
-    json.type,
-    getTodayDateString(),
-  );
+  const product =
+    json.type === "ordered"
+      ? await logOrderEvent(supabase, id, getTodayDateString())
+      : await logProductEvent(supabase, id, "received", getTodayDateString());
   return NextResponse.json({ product });
 }
