@@ -24,17 +24,24 @@ import { GripVerticalIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatNumber } from "@/lib/format";
-import { MaterialOrderReceiveButtons } from "@/components/costing/material-order-receive-buttons";
+import {
+  MaterialOrderButton,
+  MaterialReceiveButton,
+} from "@/components/costing/material-order-receive-buttons";
 
 export type MaterialCategoryItem = {
   id: string;
   name: string;
   hasCost: boolean;
+  category: string;
   supplier: string | null;
   unit: string;
   purchasePrice: number | null;
   packageAmount: number | null;
   unitCost: number | null;
+  currentStock: number | null;
+  usageLabel: string | null;
+  reorderBadge: { label: string; variant: "destructive" | "outline" } | null;
   lastOrderedAt: string | null;
   lastReceivedAt: string | null;
 };
@@ -45,20 +52,15 @@ export type MaterialCategoryGroup = {
   items: MaterialCategoryItem[];
 };
 
-// カテゴリーごとの見出し・行の背景色(既存のtintトークンを流用。文字の読みやすさのため薄めに)。
-const CATEGORY_STYLES: Record<string, { header: string; row: string }> = {
-  "カップ・蓋・ストロー": { header: "bg-tint-blue/70", row: "bg-tint-blue/25" },
-  茶葉: { header: "bg-tint-green/70", row: "bg-tint-green/25" },
-  "ミルク・割りもの": { header: "bg-tint-yellow/70", row: "bg-tint-yellow/25" },
-  "トッピング・その他": { header: "bg-tint-pink/70", row: "bg-tint-pink/25" },
-};
-const DEFAULT_CATEGORY_STYLE = { header: "bg-tint-lavender/70", row: "bg-tint-lavender/25" };
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return "記録なし";
-  const [, m, d] = dateStr.split("-");
-  return `${Number(m)}/${Number(d)}`;
-}
+// カテゴリーごとの見出し・行の背景色(既存のtintトークンを、カテゴリー数ぶん循環利用する。
+// 文字の読みやすさのため薄めに)。
+const TINT_STYLES: { header: string; row: string }[] = [
+  { header: "bg-tint-green/70", row: "bg-tint-green/25" },
+  { header: "bg-tint-blue/70", row: "bg-tint-blue/25" },
+  { header: "bg-tint-yellow/70", row: "bg-tint-yellow/25" },
+  { header: "bg-tint-pink/70", row: "bg-tint-pink/25" },
+  { header: "bg-tint-lavender/70", row: "bg-tint-lavender/25" },
+];
 
 function MaterialRow({
   item,
@@ -88,6 +90,11 @@ function MaterialRow({
         </span>
       )}
       {item.name}
+      {item.reorderBadge && (
+        <Badge variant={item.reorderBadge.variant} className="ml-1.5 align-middle">
+          {item.reorderBadge.label}
+        </Badge>
+      )}
     </>
   );
 
@@ -122,6 +129,7 @@ function MaterialRow({
           </Link>
         )}
       </td>
+      <td className="whitespace-nowrap px-2 py-2 text-muted-foreground">{item.category}</td>
       <td className="whitespace-nowrap px-2 py-2 text-muted-foreground">{item.supplier ?? "—"}</td>
       <td className="whitespace-nowrap px-2 py-2 text-right">
         {item.purchasePrice != null ? `¥${formatNumber(item.purchasePrice)}` : "—"}
@@ -132,26 +140,27 @@ function MaterialRow({
       <td className="whitespace-nowrap px-2 py-2 text-right font-medium">
         {item.unitCost != null ? `¥${item.unitCost.toFixed(2)}/${item.unit}` : "—"}
       </td>
-      <td className="whitespace-nowrap px-2 py-2 text-muted-foreground">
-        {formatDate(item.lastOrderedAt)}
+      <td className="whitespace-nowrap px-2 py-2 text-right">
+        {item.currentStock != null ? `${formatNumber(item.currentStock)}${item.unit}` : "—"}
       </td>
-      <td className="whitespace-nowrap px-2 py-2 text-muted-foreground">
-        {formatDate(item.lastReceivedAt)}
+      <td className="whitespace-nowrap px-2 py-2 text-right text-muted-foreground">
+        {item.usageLabel ?? "—"}
       </td>
-      <td className="whitespace-nowrap px-2 py-2">
-        {!organizing && <MaterialOrderReceiveButtons productId={item.id} />}
-      </td>
+      <td className="px-2 py-2">{!organizing && <MaterialOrderButton productId={item.id} lastOrderedAt={item.lastOrderedAt} />}</td>
+      <td className="px-2 py-2">{!organizing && <MaterialReceiveButton productId={item.id} lastReceivedAt={item.lastReceivedAt} />}</td>
     </tr>
   );
 }
 
 function CategorySection({
   group,
+  style,
   organizing,
   selected,
   onToggleSelect,
 }: {
   group: MaterialCategoryGroup;
+  style: { header: string; row: string };
   organizing: boolean;
   selected: Set<string>;
   onToggleSelect: (id: string) => void;
@@ -159,7 +168,6 @@ function CategorySection({
   const router = useRouter();
   const [open, setOpen] = useState(true);
   const [items, setItems] = useState(group.items);
-  const style = CATEGORY_STYLES[group.name] ?? DEFAULT_CATEGORY_STYLE;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -209,19 +217,21 @@ function CategorySection({
       {open && (
         <div className="overflow-x-auto">
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <table className="w-full min-w-[860px] text-sm">
+            <table className="w-full min-w-[1080px] text-sm">
               <thead>
                 <tr className={`text-xs text-muted-foreground ${style.row}`}>
                   <th className="w-8 px-1 py-1.5" />
                   {organizing && <th className="w-8 px-1 py-1.5" />}
                   <th className="px-2 py-1.5 text-left font-medium">商品名</th>
+                  <th className="px-2 py-1.5 text-left font-medium">カテゴリー</th>
                   <th className="px-2 py-1.5 text-left font-medium">仕入先</th>
                   <th className="px-2 py-1.5 text-right font-medium">仕入価格</th>
-                  <th className="px-2 py-1.5 text-right font-medium">入数・内容量</th>
+                  <th className="px-2 py-1.5 text-right font-medium">内容量・入数</th>
                   <th className="px-2 py-1.5 text-right font-medium">単価</th>
-                  <th className="px-2 py-1.5 text-left font-medium">最終発注日</th>
-                  <th className="px-2 py-1.5 text-left font-medium">最終入荷日</th>
-                  <th className="px-2 py-1.5 text-left font-medium">操作</th>
+                  <th className="px-2 py-1.5 text-right font-medium">現在庫</th>
+                  <th className="px-2 py-1.5 text-right font-medium">使用量</th>
+                  <th className="px-2 py-1.5 text-left font-medium">発注</th>
+                  <th className="px-2 py-1.5 text-left font-medium">入荷</th>
                 </tr>
               </thead>
               <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
@@ -268,10 +278,11 @@ export function MaterialCategoryList({
 
   return (
     <div className="space-y-3">
-      {visibleGroups.map((group) => (
+      {visibleGroups.map((group, index) => (
         <CategorySection
           key={group.name}
           group={group}
+          style={TINT_STYLES[index % TINT_STYLES.length]}
           organizing={organizing}
           selected={selected ?? new Set()}
           onToggleSelect={onToggleSelect ?? (() => {})}

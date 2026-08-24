@@ -14,10 +14,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { PRODUCT_CATEGORIES } from "@/lib/inventory/types";
+import { PRODUCT_CATEGORIES, effectiveMaterialCategory } from "@/lib/inventory/types";
 import type { Product } from "@/lib/inventory/types";
 import { unitCost } from "@/lib/costing/calculations";
-import { MATERIAL_CATEGORIES } from "@/lib/costing/types";
 
 export function ProductForm({
   mode,
@@ -30,7 +29,9 @@ export function ProductForm({
   const [submitting, setSubmitting] = useState(false);
 
   const [name, setName] = useState(product?.name ?? "");
-  const [category, setCategory] = useState(product?.category ?? "茶葉");
+  const [category, setCategory] = useState(
+    product ? effectiveMaterialCategory(product) : "茶葉",
+  );
   const [unit, setUnit] = useState(product?.unit ?? "g");
   const [leadTimeDays, setLeadTimeDays] = useState(
     String(product?.lead_time_days ?? 14),
@@ -49,9 +50,6 @@ export function ProductForm({
     product?.package_amount != null ? String(product.package_amount) : "",
   );
   const [note, setNote] = useState(product?.note ?? "");
-  const [materialCategory, setMaterialCategory] = useState<string | null>(
-    product?.material_category ?? null,
-  );
 
   const previewUnitCost = unitCost({
     purchase_price: purchasePrice === "" ? null : Number(purchasePrice),
@@ -73,7 +71,8 @@ export function ProductForm({
       purchase_price: purchasePrice === "" ? null : Number(purchasePrice),
       package_amount: packageAmount === "" ? null : Number(packageAmount),
       note: note.trim() === "" ? null : note.trim(),
-      material_category: materialCategory,
+      // 在庫管理用・原材料一覧用のカテゴリーは1つに統一しているため、同じ値を両方の列に保存する。
+      material_category: category,
     };
 
     try {
@@ -116,58 +115,27 @@ export function ProductForm({
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label>カテゴリー(在庫管理用)</Label>
-          <Select
-            items={Object.fromEntries(PRODUCT_CATEGORIES.map((c) => [c, c]))}
-            value={category}
-            onValueChange={(v: string | null) => v && setCategory(v)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PRODUCT_CATEGORIES.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {c}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground">
-            在庫ページの絞り込みに使われる分類です。
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label>表示カテゴリー(原材料・資材一覧用)</Label>
-          <Select
-            items={Object.fromEntries([
-              ["none", "未分類"],
-              ...MATERIAL_CATEGORIES.map((c) => [c.name, `${c.emoji} ${c.name}`]),
-            ])}
-            value={materialCategory ?? "none"}
-            onValueChange={(v: string | null) =>
-              setMaterialCategory(!v || v === "none" ? null : v)
-            }
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">未分類</SelectItem>
-              {MATERIAL_CATEGORIES.map((c) => (
-                <SelectItem key={c.name} value={c.name}>
-                  {c.emoji} {c.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground">
-            「原材料・資材」一覧でのグループ分けに使います(在庫ページには影響しません)。
-          </p>
-        </div>
+      <div className="space-y-2">
+        <Label>カテゴリー</Label>
+        <Select
+          items={Object.fromEntries(PRODUCT_CATEGORIES.map((c) => [c, c]))}
+          value={category}
+          onValueChange={(v: string | null) => v && setCategory(v)}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PRODUCT_CATEGORIES.map((c) => (
+              <SelectItem key={c} value={c}>
+                {c}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          「原材料・資材」一覧でのグループ分け・在庫(茶葉)の絞り込みの両方に使われます。
+        </p>
       </div>
 
       <div className="space-y-2">

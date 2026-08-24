@@ -75,13 +75,16 @@ export const RECIPE_CATEGORIES: { name: string; emoji: string }[] = [
 ];
 export const OTHER_RECIPE_CATEGORY = { name: "その他", emoji: "📦" };
 
-// 原材料・資材一覧の表示分類(固定4種)。在庫ページが使うproducts.categoryとは別物なので、
-// products.material_categoryという専用の列に保存する。
+// 原材料・資材一覧の表示分類(固定7種)。src/lib/inventory/types.tsのPRODUCT_CATEGORIESと
+// 名称を揃えてある(在庫管理用・原材料一覧用のカテゴリーを1つに統一しているため)。
 export const MATERIAL_CATEGORIES: { name: string; emoji: string }[] = [
-  { name: "カップ・蓋・ストロー", emoji: "🥤" },
   { name: "茶葉", emoji: "🫖" },
+  { name: "カップ・蓋・ストロー", emoji: "🥤" },
   { name: "ミルク・割りもの", emoji: "🥛" },
-  { name: "トッピング・その他", emoji: "🧋" },
+  { name: "トッピング", emoji: "🧋" },
+  { name: "ギフト資材", emoji: "🎁" },
+  { name: "包装資材", emoji: "📦" },
+  { name: "その他店舗備品", emoji: "🧺" },
 ];
 export const OTHER_MATERIAL_CATEGORY = { name: "未分類", emoji: "❓" };
 

@@ -1,10 +1,13 @@
+// 商品の分類。以前は「在庫管理用(category)」「原材料・資材一覧用(material_category)」で
+// 別々の値を使っていたが、商品追加・編集画面では1つのカテゴリー選択にまとめ、
+// 選んだ値を両方の列に同時保存する(新規登録・編集のたびに自然と揃っていく)。
 export const PRODUCT_CATEGORIES = [
   "茶葉",
-  "カップ",
-  "缶",
+  "カップ・蓋・ストロー",
+  "ミルク・割りもの",
+  "トッピング",
   "ギフト資材",
   "包装資材",
-  "食材",
   "その他店舗備品",
 ] as const;
 
@@ -52,6 +55,20 @@ export type ProductWithStock = Product & {
   latest_snapshot: StockSnapshot | null;
   previous_snapshot: StockSnapshot | null;
 };
+
+// カテゴリー統一前の名称の違いを吸収するための対応表(DBの値そのものは書き換えない)。
+// 「トッピング・その他」は統一後「トッピング」という名称になったため、ここでだけ読み替える。
+const LEGACY_CATEGORY_ALIASES: Record<string, string> = {
+  "トッピング・その他": "トッピング",
+};
+
+// 「実質カテゴリー」。material_categoryが設定されていればそちら(より細かい分類)を優先し、
+// 無ければ在庫管理用のcategoryを使う。新規登録・編集後は両方の値が一致するため、
+// この関数は主に、統合前の古いデータ(2つの列が食い違っている商品)を破綻なく表示するために使う。
+export function effectiveMaterialCategory(product: Pick<Product, "category" | "material_category">): string {
+  const raw = product.material_category || product.category;
+  return LEGACY_CATEGORY_ALIASES[raw] ?? raw;
+}
 
 // Googleスプレッドシート「在庫_ネット確認」タブで×判定になった商品の記録。
 // 1回の同期(=1つのchecked_on)ごとに、その時点で×だった商品だけを保存する。

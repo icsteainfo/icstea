@@ -29,7 +29,7 @@ export function InventoryAlertSection({
             </span>
           )}
         </h2>
-        <Link href="/inventory" className="text-sm text-muted-foreground hover:underline">
+        <Link href="/costing/materials" className="text-sm text-muted-foreground hover:underline">
           在庫一覧を見る
         </Link>
       </div>

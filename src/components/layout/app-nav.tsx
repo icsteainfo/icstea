@@ -14,7 +14,6 @@ import { cn } from "@/lib/utils";
 const MAIN_ITEMS = [
   { href: "/home", label: "ホーム" },
   { href: "/projects", label: "プロジェクト" },
-  { href: "/inventory", label: "在庫" },
   { href: "/costing", label: "ドリンク原価" },
   { href: "/sales", label: "売上分析" },
   { href: "/marketing", label: "マーケティング" },
