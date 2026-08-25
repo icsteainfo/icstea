@@ -38,6 +38,8 @@ export function TaskForm({
   projects,
   defaultProjectId,
   hideActions,
+  onSaved,
+  onCancel,
 }: {
   mode: "create" | "edit";
   task?: TaskWithRelations;
@@ -46,6 +48,9 @@ export function TaskForm({
   projects: Project[];
   defaultProjectId?: string;
   hideActions?: boolean;
+  // モーダルなどページ遷移しない文脈で使う場合、/tasksへの遷移の代わりにこれらを呼ぶ
+  onSaved?: () => void;
+  onCancel?: () => void;
 }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
@@ -121,7 +126,11 @@ export function TaskForm({
         }
 
         toast.success("繰り返しタスクを登録しました");
-        router.push("/tasks");
+        if (onSaved) {
+          onSaved();
+        } else {
+          router.push("/home");
+        }
         router.refresh();
         return;
       }
@@ -156,7 +165,11 @@ export function TaskForm({
       }
 
       toast.success(mode === "create" ? "タスクを登録しました" : "更新しました");
-      router.push("/tasks");
+      if (onSaved) {
+        onSaved();
+      } else {
+        router.push("/home");
+      }
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "保存に失敗しました");
@@ -399,7 +412,7 @@ export function TaskForm({
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push("/tasks")}
+            onClick={() => (onCancel ? onCancel() : router.push("/home"))}
           >
             キャンセル
           </Button>

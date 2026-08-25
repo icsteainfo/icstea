@@ -1,7 +1,9 @@
-import Link from "next/link";
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { TaskCheckbox } from "./task-checkbox";
 import { CategoryTag } from "./category-tag";
+import { TaskCardActions, useTaskCardActions } from "./task-card-actions";
 import { ProgressBadge } from "@/components/subtasks/progress-badge";
 import { SubtaskMiniList } from "@/components/subtasks/subtask-mini-list";
 import { computeProgress } from "@/lib/subtasks/progress";
@@ -36,6 +38,8 @@ export function TaskListItem({ task }: { task: TaskWithRelations }) {
   const isCompleted = task.status === "completed";
   const priorityBadge = PRIORITY_BADGE[task.priority_level];
   const progress = computeProgress(task.progress_override, task.subtasks);
+  const { openEdit, handleDuplicateClick, openDeleteConfirm, loadingLists, duplicating, dialogs } =
+    useTaskCardActions(task);
 
   return (
     <div className="shadow-dreamy-sm pop-lift rounded-[22px] border-2 border-border bg-card p-4 hover:border-[color-mix(in_oklch,var(--border),var(--foreground)_12%)]">
@@ -48,42 +52,57 @@ export function TaskListItem({ task }: { task: TaskWithRelations }) {
           />
         </div>
 
-        <Link href={`/tasks/${task.id}`} className="flex-1 space-y-1.5">
-          <p
-            className={
-              isCompleted
-                ? "text-muted-foreground line-through"
-                : "font-semibold text-foreground"
-            }
+        <div className="flex min-w-0 flex-1 items-start justify-between gap-2">
+          <button
+            type="button"
+            onClick={openEdit}
+            className="min-w-0 flex-1 space-y-1.5 text-left"
           >
-            {task.title}
-          </p>
-          <div className="flex flex-wrap items-center gap-1.5 text-xs">
-            {progress && <ProgressBadge progress={progress} />}
-            {priorityBadge && (
-              <Badge variant="outline" className={priorityBadge.className}>
-                {priorityBadge.label}
-              </Badge>
-            )}
-            {task.due_date && task.start_date && (
-              <Badge variant="outline">
-                期間: {formatDate(task.start_date)}〜{formatDate(task.due_date)}
-              </Badge>
-            )}
-            {task.due_date && !task.start_date && (
-              <Badge variant="outline">期限: {formatDate(task.due_date)}</Badge>
-            )}
-            {task.category_name && <CategoryTag name={task.category_name} />}
-            <Badge variant="outline">担当: {task.assignee_name}</Badge>
-            {task.is_waiting && (
-              <Badge variant="outline">
-                対応待ち
-                {task.waiting_follow_up_date &&
-                  ` (再確認: ${formatDate(task.waiting_follow_up_date)})`}
-              </Badge>
-            )}
-          </div>
-        </Link>
+            <p
+              className={
+                isCompleted
+                  ? "text-muted-foreground line-through"
+                  : "font-semibold text-foreground"
+              }
+            >
+              {task.title}
+            </p>
+            <div className="flex flex-wrap items-center gap-1.5 text-xs">
+              {progress && <ProgressBadge progress={progress} />}
+              {priorityBadge && (
+                <Badge variant="outline" className={priorityBadge.className}>
+                  {priorityBadge.label}
+                </Badge>
+              )}
+              {task.due_date && task.start_date && (
+                <Badge variant="outline">
+                  期間: {formatDate(task.start_date)}〜{formatDate(task.due_date)}
+                </Badge>
+              )}
+              {task.due_date && !task.start_date && (
+                <Badge variant="outline">期限: {formatDate(task.due_date)}</Badge>
+              )}
+              {task.category_name && <CategoryTag name={task.category_name} />}
+              <Badge variant="outline">担当: {task.assignee_name}</Badge>
+              {task.is_waiting && (
+                <Badge variant="outline">
+                  対応待ち
+                  {task.waiting_follow_up_date &&
+                    ` (再確認: ${formatDate(task.waiting_follow_up_date)})`}
+                </Badge>
+              )}
+            </div>
+          </button>
+          <TaskCardActions
+            task={task}
+            openEdit={openEdit}
+            onDuplicate={handleDuplicateClick}
+            onDelete={openDeleteConfirm}
+            loadingLists={loadingLists}
+            duplicating={duplicating}
+            dialogs={dialogs}
+          />
+        </div>
       </div>
 
       <SubtaskMiniList subtasks={task.subtasks} />

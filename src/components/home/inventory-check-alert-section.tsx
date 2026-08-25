@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { TaskCheckbox } from "@/components/tasks/task-checkbox";
 import { SyncInventoryButton } from "@/components/inventory/sync-inventory-button";
 import { SparkleMotif } from "./motifs";
@@ -51,14 +50,6 @@ export function InventoryCheckAlertSection({ alerts }: { alerts: InventoryCheckA
                   </p>
                 </div>
               </div>
-              {alert.task_id && (
-                <Link
-                  href={`/tasks/${alert.task_id}`}
-                  className="text-sm text-primary hover:underline"
-                >
-                  Todoを見る
-                </Link>
-              )}
             </div>
           ))}
         </div>

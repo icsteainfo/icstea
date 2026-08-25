@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -51,7 +50,7 @@ export function SubtaskTodayRow({
             aria-label={isCompleted ? "未完了に戻す" : "完了にする"}
           />
         </div>
-        <Link href={`/tasks/${parentTask.id}`} className="flex-1 space-y-1">
+        <div className="flex-1 space-y-1">
           <p
             className={
               isCompleted
@@ -67,7 +66,7 @@ export function SubtaskTodayRow({
             )}
             <Badge variant="outline">担当: {subtask.assignee_name}</Badge>
           </div>
-        </Link>
+        </div>
       </div>
     </div>
   );

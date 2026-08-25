@@ -20,8 +20,9 @@ const MAIN_ITEMS = [
   { href: "/monthly-review", label: "経営MTG" },
 ];
 
+// Todoの表示・操作自体はホーム画面に一本化したため、ここには
+// Todoに関する設定・管理系のページだけを残す(「Todo一覧」ページは廃止)
 const TODO_GROUP_ITEMS = [
-  { href: "/tasks", label: "Todo一覧" },
   { href: "/staff", label: "スタッフ" },
   { href: "/categories", label: "カテゴリー" },
   { href: "/templates", label: "テンプレート" },
@@ -48,44 +49,26 @@ export function AppNav() {
         </Link>
       ))}
 
-      <div
-        className={cn(
-          "flex items-center gap-0.5 rounded-full",
-          isTodoGroupActive && navLinkActiveClass,
-        )}
-      >
-        <Link
-          href="/tasks"
-          className={cn(
-            "flex items-center gap-1 rounded-l-full px-3 py-1.5 font-medium text-foreground/80 hover:bg-muted hover:text-foreground",
-            isTodoGroupActive && "text-foreground font-semibold hover:bg-transparent",
-          )}
-        >
-          <ListChecks className="size-4" />
-          Todo
-        </Link>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <button
-                type="button"
-                aria-label="Todoメニューを開く"
-                className={cn(
-                  "flex items-center rounded-r-full px-1.5 py-1.5 text-foreground/80 hover:bg-muted hover:text-foreground",
-                  isTodoGroupActive && "text-foreground hover:bg-transparent",
-                )}
-              >
-                <ChevronDown className="size-3.5" />
-              </button>
-            }
-          />
-          <DropdownMenuContent className="rounded-xl" sideOffset={6}>
-            {TODO_GROUP_ITEMS.map((item) => (
-              <DropdownMenuItem key={item.href} render={<Link href={item.href}>{item.label}</Link>} />
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <button
+              type="button"
+              aria-label="Todo設定メニューを開く"
+              className={cn(navLinkClass, "flex items-center gap-1", isTodoGroupActive && navLinkActiveClass)}
+            >
+              <ListChecks className="size-4" />
+              Todo設定
+              <ChevronDown className="size-3.5" />
+            </button>
+          }
+        />
+        <DropdownMenuContent className="rounded-xl" sideOffset={6}>
+          {TODO_GROUP_ITEMS.map((item) => (
+            <DropdownMenuItem key={item.href} render={<Link href={item.href}>{item.label}</Link>} />
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       {MAIN_ITEMS.slice(1).map((item) => (
         <Link

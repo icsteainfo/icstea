@@ -1,7 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAttachment } from "@/lib/attachments/queries";
+import { createAttachment, listAttachments } from "@/lib/attachments/queries";
 import { attachmentInputSchema } from "@/lib/validation/attachment";
+
+export async function GET(request: NextRequest) {
+  const taskId = request.nextUrl.searchParams.get("task_id");
+  if (!taskId) {
+    return NextResponse.json({ error: "task_idを指定してください" }, { status: 400 });
+  }
+  const supabase = await createClient();
+  const attachments = await listAttachments(supabase, taskId);
+  return NextResponse.json({ attachments });
+}
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();

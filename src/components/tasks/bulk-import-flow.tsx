@@ -216,7 +216,7 @@ export function BulkImportFlow({
         throw new Error(body.error ?? "登録に失敗しました");
       }
       toast.success("選択したTodoを登録しました");
-      router.push("/tasks");
+      router.push("/home");
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "登録に失敗しました");
@@ -302,7 +302,7 @@ export function BulkImportFlow({
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push("/tasks")}
+            onClick={() => router.push("/home")}
           >
             キャンセル
           </Button>

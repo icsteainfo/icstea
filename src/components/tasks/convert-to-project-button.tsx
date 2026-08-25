@@ -68,7 +68,9 @@ export function ConvertToProjectButton({
         if (next) setName(taskTitle);
       }}
     >
-      <DialogTrigger render={<Button variant="outline" size="sm" />}>
+      <DialogTrigger
+        render={<button type="button" className="text-muted-foreground hover:text-foreground hover:underline" />}
+      >
         プロジェクトに変換
       </DialogTrigger>
       <DialogContent>

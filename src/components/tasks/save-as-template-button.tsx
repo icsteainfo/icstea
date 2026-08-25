@@ -62,8 +62,10 @@ export function SaveAsTemplateButton({
         if (next) setName(taskTitle);
       }}
     >
-      <DialogTrigger render={<Button variant="outline" size="sm" />}>
-        このTodoをテンプレートにする
+      <DialogTrigger
+        render={<button type="button" className="text-muted-foreground hover:text-foreground hover:underline" />}
+      >
+        テンプレートにする
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

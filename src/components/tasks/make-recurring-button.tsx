@@ -77,8 +77,10 @@ export function MakeRecurringButton({
         if (next) setRule(DEFAULT_RECURRENCE_RULE_VALUE);
       }}
     >
-      <DialogTrigger render={<Button variant="outline" size="sm" />}>
-        この繰り返しにする
+      <DialogTrigger
+        render={<button type="button" className="text-muted-foreground hover:text-foreground hover:underline" />}
+      >
+        繰り返しにする
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

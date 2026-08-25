@@ -47,9 +47,9 @@ export function CreateFromTemplateForm({
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error ?? "作成に失敗しました");
       }
-      const { task } = await res.json();
+      await res.json();
       toast.success("タスクを作成しました");
-      router.push(`/tasks/${task.id}`);
+      router.push("/home");
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "作成に失敗しました");
@@ -103,7 +103,7 @@ export function CreateFromTemplateForm({
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push("/tasks")}
+          onClick={() => router.push("/home")}
         >
           キャンセル
         </Button>

@@ -16,9 +16,10 @@ export function CreateReorderTaskButton({ productId }: { productId: string }) {
         method: "POST",
       });
       if (!res.ok) throw new Error();
-      const { task } = await res.json();
+      await res.json();
       toast.success("「発注する」タスクを作成しました");
-      router.push(`/tasks/${task.id}`);
+      router.push("/home");
+      router.refresh();
     } catch {
       toast.error("タスクの作成に失敗しました");
       setLoading(false);
