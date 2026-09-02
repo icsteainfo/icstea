@@ -17,6 +17,7 @@ import { ActiveProjectsSection } from "@/components/home/active-projects-section
 import { InventoryAlertSection } from "@/components/home/inventory-alert-section";
 import { InventoryCheckAlertSection } from "@/components/home/inventory-check-alert-section";
 import { NewTaskMenuButton } from "@/components/tasks/new-task-menu-button";
+import { QuickMemoSection } from "@/components/home/quick-memo-section";
 import {
   StarMotif,
   HeartMotif,
@@ -29,6 +30,7 @@ import {
   listLatestInventoryCheckAlerts,
   listProductsWithLatestStock,
 } from "@/lib/inventory/queries";
+import { getQuickMemo } from "@/lib/quick-memo/queries";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -36,11 +38,12 @@ export default async function HomePage() {
   await generateDueRecurringInstances(supabase);
   const today = getTodayDateString();
 
-  const [tasks, products, inventoryCheckAlerts, activeProjects] = await Promise.all([
+  const [tasks, products, inventoryCheckAlerts, activeProjects, quickMemo] = await Promise.all([
     listTasks(supabase, {}),
     listProductsWithLatestStock(supabase),
     listLatestInventoryCheckAlerts(supabase),
     listProjects(supabase, { excludePhases: ["completed", "on_hold"] }),
+    getQuickMemo(supabase),
   ]);
 
   const urgentItems = buildTodayItems(tasks, today);
@@ -72,6 +75,8 @@ export default async function HomePage() {
         </h1>
         <NewTaskMenuButton />
       </div>
+
+      <QuickMemoSection initialContent={quickMemo} />
 
       <UrgentSection items={urgentItems} />
       <ActiveProjectsSection projects={activeProjects} />

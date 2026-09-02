@@ -1085,6 +1085,20 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["monthly_reviews"]["Insert"]>;
         Relationships: [];
       };
+      quick_memo: {
+        Row: {
+          id: string;
+          content: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          content?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["quick_memo"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
