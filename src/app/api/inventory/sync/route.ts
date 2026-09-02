@@ -5,7 +5,15 @@ import { syncInventoryCheckFromSheet } from "@/lib/inventory/inventory-check-syn
 
 export async function POST() {
   const supabase = await createClient();
-  const result = await syncInventoryFromSheet(supabase);
+
+  let result;
+  try {
+    result = await syncInventoryFromSheet(supabase);
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "在庫の取り込みでエラーが発生しました";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 
   // 在庫チェック(◎/×)連携は別タブを読むため、万一エラーになっても
   // 既存の茶葉在庫の同期(上のresult)は成功したまま返す。

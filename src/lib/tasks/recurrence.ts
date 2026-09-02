@@ -71,6 +71,10 @@ export async function generateDueRecurringInstances(
       ? computeNextAfter(series, series.last_generated_due_date)
       : computeNextOnOrAfter(series, series.created_at.slice(0, 10));
 
+    // 生成すべき日がないシリーズがほとんどのため、その場合はサブタスク取得すら不要
+    // (ホームを開くたびに全アクティブシリーズ分の問い合わせが走り、体感速度を悪化させていた)
+    if (cursor > today) continue;
+
     let iterations = 0;
     let lastGenerated: string | null = null;
 
