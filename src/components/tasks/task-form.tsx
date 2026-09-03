@@ -17,11 +17,11 @@ import {
 } from "@/components/ui/select";
 import { RecurrenceEditor } from "@/components/tasks/recurrence-editor";
 import type { Category, Staff, TaskWithRelations } from "@/lib/tasks/types";
-import type { Project } from "@/lib/projects/types";
+import type { Initiative } from "@/lib/initiatives/types";
 import type { PriorityLevel, RecurrenceType } from "@/types/database.types";
 
 const NO_CATEGORY = "__none__";
-const NO_PROJECT = "__none__";
+const NO_INITIATIVE = "__none__";
 
 const PRIORITY_LABELS: Record<PriorityLevel, string> = {
   urgent: "緊急",
@@ -35,8 +35,8 @@ export function TaskForm({
   task,
   categories,
   staff,
-  projects,
-  defaultProjectId,
+  initiatives,
+  defaultInitiativeId,
   hideActions,
   onSaved,
   onCancel,
@@ -45,8 +45,8 @@ export function TaskForm({
   task?: TaskWithRelations;
   categories: Category[];
   staff: Staff[];
-  projects: Project[];
-  defaultProjectId?: string;
+  initiatives: Initiative[];
+  defaultInitiativeId?: string;
   hideActions?: boolean;
   // モーダルなどページ遷移しない文脈で使う場合、/tasksへの遷移の代わりにこれらを呼ぶ
   onSaved?: () => void;
@@ -60,8 +60,8 @@ export function TaskForm({
   const [categoryId, setCategoryId] = useState(
     task?.category_id ?? NO_CATEGORY,
   );
-  const [projectId, setProjectId] = useState(
-    task?.project_id ?? defaultProjectId ?? NO_PROJECT,
+  const [initiativeId, setInitiativeId] = useState(
+    task?.initiative_id ?? defaultInitiativeId ?? NO_INITIATIVE,
   );
   const [assigneeType, setAssigneeType] = useState<"owner" | "staff">(
     task?.assignee_type ?? "owner",
@@ -139,7 +139,7 @@ export function TaskForm({
         title,
         memo: memo || null,
         category_id: categoryId === NO_CATEGORY ? null : categoryId,
-        project_id: projectId === NO_PROJECT ? null : projectId,
+        initiative_id: initiativeId === NO_INITIATIVE ? null : initiativeId,
         assignee_type: assigneeType,
         assignee_staff_id: assigneeType === "staff" ? assigneeStaffId : null,
         due_date: dueDate || null,
@@ -215,23 +215,23 @@ export function TaskForm({
       </div>
 
       <div className="space-y-2">
-        <Label>関連プロジェクト</Label>
+        <Label>関連する取り組み</Label>
         <Select
           items={{
-            [NO_PROJECT]: "未設定",
-            ...Object.fromEntries(projects.map((p) => [p.id, p.name])),
+            [NO_INITIATIVE]: "未設定",
+            ...Object.fromEntries(initiatives.map((i) => [i.id, i.title])),
           }}
-          value={projectId}
-          onValueChange={(v: string | null) => setProjectId(v ?? NO_PROJECT)}
+          value={initiativeId}
+          onValueChange={(v: string | null) => setInitiativeId(v ?? NO_INITIATIVE)}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="プロジェクトを選択" />
+            <SelectValue placeholder="取り組みを選択" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={NO_PROJECT}>未設定</SelectItem>
-            {projects.map((p) => (
-              <SelectItem key={p.id} value={p.id}>
-                {p.name}
+            <SelectItem value={NO_INITIATIVE}>未設定</SelectItem>
+            {initiatives.map((i) => (
+              <SelectItem key={i.id} value={i.id}>
+                {i.title}
               </SelectItem>
             ))}
           </SelectContent>

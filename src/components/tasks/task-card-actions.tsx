@@ -15,11 +15,14 @@ import {
 import { TaskForm } from "./task-form";
 import { SaveAsTemplateButton } from "./save-as-template-button";
 import { MakeRecurringButton } from "./make-recurring-button";
-import { ConvertToProjectButton } from "./convert-to-project-button";
 import type { Category, Staff, TaskWithRelations } from "@/lib/tasks/types";
-import type { Project } from "@/lib/projects/types";
+import type { Initiative } from "@/lib/initiatives/types";
 
-type FormLists = { categories: Category[]; staff: Staff[]; projects: Project[] };
+type FormLists = {
+  categories: Category[];
+  staff: Staff[];
+  initiatives: Initiative[];
+};
 
 // ホーム画面のTodoカードから、ページ遷移せずに編集・複製・削除を行うための操作群。
 // 編集フォームで使うカテゴリー・スタッフ・プロジェクトの一覧は、初回操作時に一度だけ取得する。
@@ -37,18 +40,18 @@ export function useTaskCardActions(task: TaskWithRelations) {
     if (lists) return lists;
     setLoadingLists(true);
     try {
-      const [categoriesRes, staffRes, projectsRes] = await Promise.all([
+      const [categoriesRes, staffRes, initiativesRes] = await Promise.all([
         fetch("/api/categories"),
         fetch("/api/staff"),
-        fetch("/api/projects"),
+        fetch("/api/initiatives"),
       ]);
-      if (!categoriesRes.ok || !staffRes.ok || !projectsRes.ok) throw new Error();
-      const [{ categories }, { staff }, { projects }] = await Promise.all([
+      if (!categoriesRes.ok || !staffRes.ok || !initiativesRes.ok) throw new Error();
+      const [{ categories }, { staff }, { initiatives }] = await Promise.all([
         categoriesRes.json(),
         staffRes.json(),
-        projectsRes.json(),
+        initiativesRes.json(),
       ]);
-      const next = { categories, staff, projects };
+      const next = { categories, staff, initiatives };
       setLists(next);
       return next;
     } catch {
@@ -79,7 +82,7 @@ export function useTaskCardActions(task: TaskWithRelations) {
           title: task.title,
           memo: task.memo,
           category_id: task.category_id,
-          project_id: task.project_id,
+          initiative_id: task.initiative_id,
           assignee_type: task.assignee_type,
           assignee_staff_id: task.assignee_staff_id,
           due_date: task.due_date,
@@ -148,7 +151,7 @@ export function useTaskCardActions(task: TaskWithRelations) {
               task={editTask}
               categories={lists.categories}
               staff={lists.staff}
-              projects={lists.projects}
+              initiatives={lists.initiatives}
               onSaved={() => setEditTask(null)}
               onCancel={() => setEditTask(null)}
             />
@@ -196,24 +199,10 @@ export function TaskCardActions({
   dialogs: React.ReactNode;
 }) {
   const [showMore, setShowMore] = useState(false);
-  const [attachmentCount, setAttachmentCount] = useState<number | null>(null);
 
-  async function toggleMore(e: React.MouseEvent) {
+  function toggleMore(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    if (!showMore && attachmentCount === null) {
-      try {
-        const res = await fetch(`/api/attachments?task_id=${task.id}`);
-        if (res.ok) {
-          const { attachments } = await res.json();
-          setAttachmentCount(attachments.length);
-        } else {
-          setAttachmentCount(0);
-        }
-      } catch {
-        setAttachmentCount(0);
-      }
-    }
     setShowMore((v) => !v);
   }
 
@@ -260,12 +249,6 @@ export function TaskCardActions({
         <div className="flex flex-wrap items-center justify-end gap-2.5 text-muted-foreground">
           <SaveAsTemplateButton taskId={task.id} taskTitle={task.title} />
           <MakeRecurringButton taskId={task.id} taskTitle={task.title} />
-          <ConvertToProjectButton
-            taskId={task.id}
-            taskTitle={task.title}
-            subtaskCount={task.subtasks.length}
-            attachmentCount={attachmentCount ?? 0}
-          />
         </div>
       )}
 

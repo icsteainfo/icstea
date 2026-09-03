@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { listTasks } from "@/lib/tasks/queries";
-import { listProjects } from "@/lib/projects/queries";
+import { listInitiatives } from "@/lib/initiatives/queries";
 import {
   bucketOtherTasks,
   buildTodayItems,
@@ -13,7 +13,7 @@ import { UrgentSection } from "@/components/home/urgent-section";
 import { DelegatedSection } from "@/components/home/delegated-section";
 import { WaitingSection } from "@/components/home/waiting-section";
 import { OtherTasksSection } from "@/components/home/other-tasks-section";
-import { ActiveProjectsSection } from "@/components/home/active-projects-section";
+import { InitiativesSection } from "@/components/home/initiatives-section";
 import { InventoryAlertSection } from "@/components/home/inventory-alert-section";
 import { InventoryCheckAlertSection } from "@/components/home/inventory-check-alert-section";
 import { NewTaskMenuButton } from "@/components/tasks/new-task-menu-button";
@@ -38,13 +38,15 @@ export default async function HomePage() {
   await generateDueRecurringInstances(supabase);
   const today = getTodayDateString();
 
-  const [tasks, products, inventoryCheckAlerts, activeProjects, quickMemo] = await Promise.all([
-    listTasks(supabase, {}),
-    listProductsWithLatestStock(supabase),
-    listLatestInventoryCheckAlerts(supabase),
-    listProjects(supabase, { excludePhases: ["completed", "on_hold"] }),
-    getQuickMemo(supabase),
-  ]);
+  const [tasks, products, inventoryCheckAlerts, quickMemo, activeInitiatives, archivedInitiatives] =
+    await Promise.all([
+      listTasks(supabase, {}),
+      listProductsWithLatestStock(supabase),
+      listLatestInventoryCheckAlerts(supabase),
+      getQuickMemo(supabase),
+      listInitiatives(supabase, { archived: false }),
+      listInitiatives(supabase, { archived: true }),
+    ]);
 
   const urgentItems = buildTodayItems(tasks, today);
   const delegatedTasks = sortTasksFallback(tasks.filter(isDelegated), today);
@@ -78,8 +80,12 @@ export default async function HomePage() {
 
       <QuickMemoSection initialContent={quickMemo} />
 
+      <InitiativesSection
+        initialInitiatives={activeInitiatives}
+        initialArchived={archivedInitiatives}
+      />
+
       <UrgentSection items={urgentItems} />
-      <ActiveProjectsSection projects={activeProjects} />
       <InventoryCheckAlertSection alerts={inventoryCheckAlerts} />
       <InventoryAlertSection products={products} />
       <DelegatedSection tasks={delegatedTasks} />

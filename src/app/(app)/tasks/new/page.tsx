@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { listCategories, listStaff } from "@/lib/tasks/queries";
-import { listProjects } from "@/lib/projects/queries";
+import { listInitiatives } from "@/lib/initiatives/queries";
 import { TaskForm } from "@/components/tasks/task-form";
 
 export default async function NewTaskPage({
@@ -10,10 +10,10 @@ export default async function NewTaskPage({
 }) {
   const params = await searchParams;
   const supabase = await createClient();
-  const [categories, staff, projects] = await Promise.all([
+  const [categories, staff, initiatives] = await Promise.all([
     listCategories(supabase),
     listStaff(supabase),
-    listProjects(supabase),
+    listInitiatives(supabase),
   ]);
 
   return (
@@ -23,8 +23,8 @@ export default async function NewTaskPage({
         mode="create"
         categories={categories}
         staff={staff}
-        projects={projects}
-        defaultProjectId={params.project_id}
+        initiatives={initiatives}
+        defaultInitiativeId={params.initiative_id}
       />
     </div>
   );

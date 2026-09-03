@@ -34,6 +34,7 @@ export type CampaignType =
   | "new_product";
 export type IngredientType = "raw_material" | "intermediate_recipe";
 export type HotIce = "HOT" | "ICE";
+export type InitiativeStatus = "want" | "in_progress" | "must";
 
 export interface Database {
   public: {
@@ -177,6 +178,7 @@ export interface Database {
           stores_order_id: string | null;
           progress_override: number | null;
           project_id: string | null;
+          initiative_id: string | null;
           source: TaskSource;
           created_at: string;
           updated_at: string;
@@ -204,6 +206,7 @@ export interface Database {
           stores_order_id?: string | null;
           progress_override?: number | null;
           project_id?: string | null;
+          initiative_id?: string | null;
           source?: TaskSource;
           created_at?: string;
           updated_at?: string;
@@ -245,7 +248,42 @@ export interface Database {
             referencedRelation: "projects";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "tasks_initiative_id_fkey";
+            columns: ["initiative_id"];
+            isOneToOne: false;
+            referencedRelation: "initiatives";
+            referencedColumns: ["id"];
+          },
         ];
+      };
+      initiatives: {
+        Row: {
+          id: string;
+          title: string;
+          status: InitiativeStatus;
+          next_action: string | null;
+          memo: string | null;
+          due_date: string | null;
+          archived: boolean;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          status?: InitiativeStatus;
+          next_action?: string | null;
+          memo?: string | null;
+          due_date?: string | null;
+          archived?: boolean;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["initiatives"]["Insert"]>;
+        Relationships: [];
       };
       projects: {
         Row: {

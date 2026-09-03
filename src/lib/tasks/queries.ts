@@ -60,6 +60,7 @@ export async function listTasks(
   if (filters.isWaiting !== undefined)
     query = query.eq("is_waiting", filters.isWaiting);
   if (filters.projectId) query = query.eq("project_id", filters.projectId);
+  if (filters.initiativeId) query = query.eq("initiative_id", filters.initiativeId);
 
   const { data, error } = await query;
   if (error) throw error;
@@ -102,6 +103,36 @@ export async function listTasksForProjects(
   return byProject;
 }
 
+// ホーム画面の「今取り組んでいること」用に、複数取り組み分のTodoをまとめて取得する
+export async function listTasksForInitiatives(
+  supabase: Client,
+  initiativeIds: string[],
+): Promise<Map<string, TaskWithRelations[]>> {
+  const byInitiative = new Map<string, TaskWithRelations[]>();
+  if (initiativeIds.length === 0) return byInitiative;
+
+  const { data, error } = await supabase
+    .from("tasks")
+    .select(TASK_WITH_RELATIONS_SELECT)
+    .in("initiative_id", initiativeIds)
+    .order("due_date", { ascending: true, nullsFirst: false })
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+
+  const tasks = (data as unknown as TaskRow[]).map(toTaskWithRelationsBase);
+  const subtasksByTask = await listSubtasksForTasks(
+    supabase,
+    tasks.map((t) => t.id),
+  );
+  for (const t of tasks) {
+    const withSubtasks = { ...t, subtasks: subtasksByTask.get(t.id) ?? [] };
+    const list = byInitiative.get(t.initiative_id!) ?? [];
+    list.push(withSubtasks);
+    byInitiative.set(t.initiative_id!, list);
+  }
+  return byInitiative;
+}
+
 export async function getTask(
   supabase: Client,
   id: string,
@@ -139,6 +170,7 @@ export async function createTask(
       waiting_note: input.waiting_note || null,
       priority_level: input.priority_level ?? "medium",
       project_id: input.project_id || null,
+      initiative_id: input.initiative_id || null,
     })
     .select()
     .single();
@@ -173,6 +205,8 @@ export async function updateTask(
     patch.priority_level = input.priority_level;
   if (input.project_id !== undefined)
     patch.project_id = input.project_id || null;
+  if (input.initiative_id !== undefined)
+    patch.initiative_id = input.initiative_id || null;
 
   const { data, error } = await supabase
     .from("tasks")

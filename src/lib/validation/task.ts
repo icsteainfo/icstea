@@ -5,6 +5,7 @@ const taskFieldsSchema = z.object({
   memo: z.string().trim().max(2000).optional().nullable(),
   category_id: z.uuid().optional().nullable(),
   project_id: z.uuid().optional().nullable(),
+  initiative_id: z.uuid().optional().nullable(),
   assignee_type: z.enum(["owner", "staff"]),
   assignee_staff_id: z.uuid().optional().nullable(),
   due_date: z
