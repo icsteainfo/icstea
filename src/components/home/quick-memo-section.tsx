@@ -62,9 +62,9 @@ export function QuickMemoSection({ initialContent }: { initialContent: string })
           : "";
 
   return (
-    <div className="shadow-dreamy relative isolate rounded-3xl border-2 border-tint-yellow-line bg-tint-yellow p-4">
+    <div className="shadow-dreamy relative isolate rounded-3xl border-2 border-tint-yellow-line bg-tint-yellow p-3">
       <SparkleMotif className="pop-motif pop-twinkle top-3 right-4 size-5 text-[#F0B429] opacity-80" />
-      <div className="mb-2 flex items-center justify-between gap-2">
+      <div className="mb-1.5 flex items-center justify-between gap-2">
         <h2 className="text-lg font-bold">📝 メモ</h2>
         <span className="text-xs text-muted-foreground">{statusLabel}</span>
       </div>
@@ -73,7 +73,7 @@ export function QuickMemoSection({ initialContent }: { initialContent: string })
         onChange={(e) => handleChange(e.target.value)}
         onBlur={handleBlur}
         placeholder="思いついたことをすぐメモ…"
-        rows={3}
+        rows={2}
         maxLength={4000}
         className="resize-none border-none bg-white/60 focus-visible:ring-1"
       />

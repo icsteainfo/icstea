@@ -34,7 +34,8 @@ export type CampaignType =
   | "new_product";
 export type IngredientType = "raw_material" | "intermediate_recipe";
 export type HotIce = "HOT" | "ICE";
-export type InitiativeStatus = "want" | "in_progress" | "must";
+// 重要度×緊急度によるABCD優先度(A: 重要かつ緊急 〜 D: 重要でも緊急でもない)
+export type InitiativePriority = "A" | "B" | "C" | "D";
 
 export interface Database {
   public: {
@@ -261,7 +262,7 @@ export interface Database {
         Row: {
           id: string;
           title: string;
-          status: InitiativeStatus;
+          priority: InitiativePriority;
           next_action: string | null;
           memo: string | null;
           due_date: string | null;
@@ -273,7 +274,7 @@ export interface Database {
         Insert: {
           id?: string;
           title: string;
-          status?: InitiativeStatus;
+          priority?: InitiativePriority;
           next_action?: string | null;
           memo?: string | null;
           due_date?: string | null;

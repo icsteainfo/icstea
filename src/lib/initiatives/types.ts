@@ -1,10 +1,10 @@
-import type { InitiativeStatus } from "@/types/database.types";
+import type { InitiativePriority } from "@/types/database.types";
 import type { TaskWithRelations } from "@/lib/tasks/types";
 
 export type Initiative = {
   id: string;
   title: string;
-  status: InitiativeStatus;
+  priority: InitiativePriority;
   next_action: string | null;
   memo: string | null;
   due_date: string | null;

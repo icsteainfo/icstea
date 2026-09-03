@@ -18,9 +18,9 @@ export function InventoryAlertSection({
     .filter((entry) => entry.status.needsReorder);
 
   return (
-    <section className="shadow-dreamy relative isolate rounded-3xl border-2 border-tint-blue-line bg-tint-blue p-4">
+    <section className="shadow-dreamy relative isolate rounded-3xl border-2 border-tint-blue-line bg-tint-blue p-3">
       <CloudMotif className="pop-motif -top-1 -right-2 size-10 text-[#9DDBF5] opacity-80" />
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-1.5 flex items-center justify-between">
         <h2 className="text-lg font-bold">
           在庫・発注
           {needsReorder.length > 0 && (
@@ -39,7 +39,7 @@ export function InventoryAlertSection({
           現在、発注が必要な商品はありません
         </p>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {needsReorder.map(({ product, status }) => {
             const severe = status.urgency === "below_safety_stock";
             return (

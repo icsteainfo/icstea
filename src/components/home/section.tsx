@@ -61,16 +61,16 @@ export function HomeSection({
     );
 
   const panelClassName = tint
-    ? cn("relative isolate rounded-3xl border-2 p-4 shadow-dreamy", TINT_CLASSES[tint])
+    ? cn("relative isolate rounded-3xl border-2 p-3 shadow-dreamy", TINT_CLASSES[tint])
     : "space-y-2";
 
   if (!collapsible) {
     return (
       <section className={panelClassName}>
         {tint && TINT_MOTIF[tint]}
-        <div className={tint ? "mb-2" : undefined}>
+        <div className={tint ? "mb-1.5" : undefined}>
           {heading}
-          {description && <p className="text-sm text-muted-foreground">{description}</p>}
+          {description && <p className="text-xs text-muted-foreground">{description}</p>}
         </div>
         {body}
       </section>
@@ -83,11 +83,11 @@ export function HomeSection({
       <summary className="flex cursor-pointer list-none items-center justify-between gap-2 [&::-webkit-details-marker]:hidden">
         <div>
           {heading}
-          {description && <p className="text-sm text-muted-foreground">{description}</p>}
+          {description && <p className="text-xs text-muted-foreground">{description}</p>}
         </div>
         <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
       </summary>
-      <div className="pt-2">{body}</div>
+      <div className="pt-1.5">{body}</div>
     </details>
   );
 }

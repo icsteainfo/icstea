@@ -3,11 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { GripVerticalIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -16,12 +20,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { InitiativeStatusBadge } from "./initiative-status-badge";
+import { cn } from "@/lib/utils";
+import {
+  INITIATIVE_PRIORITY_CLASSNAME,
+  INITIATIVE_PRIORITY_LABELS,
+  INITIATIVE_PRIORITY_ORDER,
+} from "./initiative-priority-badge";
 import { InitiativeInlineField } from "./initiative-inline-field";
 import { InitiativeMemoEditor } from "./initiative-memo-editor";
 import { InitiativeTodoList } from "./initiative-todo-list";
 import { InitiativeForm } from "./initiative-form";
 import type { InitiativeWithTasks } from "@/lib/initiatives/types";
+import type { InitiativePriority } from "@/types/database.types";
 
 function formatDate(dateStr: string | null) {
   if (!dateStr) return null;
@@ -32,25 +42,17 @@ function formatDate(dateStr: string | null) {
 export function InitiativeCard({
   initiative,
   onRemoved,
+  onPriorityChange,
 }: {
   initiative: InitiativeWithTasks;
   onRemoved: (id: string) => void;
+  onPriorityChange: (id: string, priority: InitiativePriority) => void;
 }) {
   const router = useRouter();
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: initiative.id,
-    disabled: initiative.archived,
-  });
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [archiving, setArchiving] = useState(false);
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
 
   async function handleToggleArchive() {
     setArchiving(true);
@@ -88,60 +90,65 @@ export function InitiativeCard({
   }
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="shadow-dreamy-sm relative isolate flex flex-col gap-3 rounded-[22px] border-2 border-border bg-card p-4"
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex min-w-0 items-start gap-1.5">
-          {!initiative.archived && (
-            <button
-              type="button"
-              {...attributes}
-              {...listeners}
-              className="mt-0.5 shrink-0 cursor-grab touch-none text-muted-foreground active:cursor-grabbing"
-              aria-label="並び替え"
-            >
-              <GripVerticalIcon className="size-4" />
-            </button>
-          )}
-          <p className="min-w-0 font-semibold break-words text-foreground">{initiative.title}</p>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <InitiativeStatusBadge status={initiative.status} />
-        </div>
+    <div className="shadow-dreamy-sm relative isolate flex flex-col gap-1 rounded-2xl border-2 border-border bg-card p-2.5">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <p className="min-w-0 flex-1 text-sm font-semibold break-words text-foreground">
+          {initiative.title}
+        </p>
+        <Select
+          items={INITIATIVE_PRIORITY_LABELS}
+          value={initiative.priority}
+          onValueChange={(v: string | null) =>
+            v && onPriorityChange(initiative.id, v as InitiativePriority)
+          }
+        >
+          <SelectTrigger
+            size="sm"
+            className={cn(
+              "h-6 shrink-0 gap-1 px-2 text-[11px] font-medium whitespace-nowrap",
+              INITIATIVE_PRIORITY_CLASSNAME[initiative.priority],
+            )}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {INITIATIVE_PRIORITY_ORDER.map((p) => (
+              <SelectItem key={p} value={p}>
+                {INITIATIVE_PRIORITY_LABELS[p]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      {initiative.due_date && (
-        <Badge variant="outline" className="w-fit">
-          期限: {formatDate(initiative.due_date)}
-        </Badge>
-      )}
-
-      <div className="flex items-center justify-end gap-2.5 text-xs">
-        <button
-          type="button"
-          onClick={() => setEditOpen(true)}
-          className="text-muted-foreground hover:text-foreground hover:underline"
-        >
-          編集
-        </button>
-        <button
-          type="button"
-          onClick={handleToggleArchive}
-          disabled={archiving}
-          className="text-muted-foreground hover:text-foreground hover:underline disabled:opacity-50"
-        >
-          {initiative.archived ? "アーカイブを解除" : "アーカイブ"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setDeleteOpen(true)}
-          className="text-destructive hover:underline"
-        >
-          削除
-        </button>
+      <div className="flex items-center justify-between gap-2 text-[11px]">
+        {initiative.due_date ? (
+          <Badge variant="outline" className="h-5 px-1.5 text-[11px]">
+            期限: {formatDate(initiative.due_date)}
+          </Badge>
+        ) : (
+          <span />
+        )}
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <button type="button" onClick={() => setEditOpen(true)} className="hover:text-foreground hover:underline">
+            編集
+          </button>
+          <button
+            type="button"
+            onClick={handleToggleArchive}
+            disabled={archiving}
+            className="hover:text-foreground hover:underline disabled:opacity-50"
+          >
+            {initiative.archived ? "アーカイブ解除" : "アーカイブ"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setDeleteOpen(true)}
+            className="text-destructive hover:underline"
+          >
+            削除
+          </button>
+        </div>
       </div>
 
       <InitiativeInlineField
@@ -149,8 +156,8 @@ export function InitiativeCard({
         initiativeId={initiative.id}
         field="next_action"
         initialValue={initiative.next_action ?? ""}
-        placeholder="直近でやるアクション"
-        emptyText="(未設定)"
+        placeholder=""
+        emptyText="（未設定）"
       />
 
       <InitiativeMemoEditor initiativeId={initiative.id} initialMemo={initiative.memo ?? ""} />

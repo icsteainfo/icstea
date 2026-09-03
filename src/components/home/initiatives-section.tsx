@@ -3,20 +3,31 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import { SortableContext, arrayMove, rectSortingStrategy } from "@dnd-kit/sortable";
 import { StarMotif } from "./motifs";
 import { InitiativeCard } from "@/components/initiatives/initiative-card";
 import { AddInitiativeButton } from "@/components/initiatives/add-initiative-button";
+import { INITIATIVE_PRIORITY_ORDER } from "@/components/initiatives/initiative-priority-badge";
 import type { Initiative, InitiativeWithTasks } from "@/lib/initiatives/types";
+import type { InitiativePriority } from "@/types/database.types";
+
+// 基本順序: A(重要かつ緊急) → B → C → D。
+// 同じ優先度内では期限が近いものを優先し(期限なしは最後)、それ以外は登録順で安定させる。
+function sortInitiatives(initiatives: InitiativeWithTasks[]): InitiativeWithTasks[] {
+  return [...initiatives].sort((a, b) => {
+    const priorityDiff =
+      INITIATIVE_PRIORITY_ORDER.indexOf(a.priority) - INITIATIVE_PRIORITY_ORDER.indexOf(b.priority);
+    if (priorityDiff !== 0) return priorityDiff;
+
+    if (a.due_date !== b.due_date) {
+      if (!a.due_date) return 1;
+      if (!b.due_date) return -1;
+      return a.due_date < b.due_date ? -1 : 1;
+    }
+
+    if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order;
+    return a.created_at < b.created_at ? -1 : 1;
+  });
+}
 
 export function InitiativesSection({
   initialInitiatives,
@@ -36,37 +47,6 @@ export function InitiativesSection({
     setInitiatives(initialInitiatives);
   }
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } }),
-  );
-
-  async function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const oldIndex = initiatives.findIndex((i) => i.id === active.id);
-    const newIndex = initiatives.findIndex((i) => i.id === over.id);
-    if (oldIndex === -1 || newIndex === -1) return;
-
-    const previous = initiatives;
-    const reordered = arrayMove(initiatives, oldIndex, newIndex);
-    setInitiatives(reordered);
-
-    try {
-      const res = await fetch("/api/initiatives/reorder", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderedIds: reordered.map((i) => i.id) }),
-      });
-      if (!res.ok) throw new Error();
-      router.refresh();
-    } catch {
-      setInitiatives(previous);
-      toast.error("並び替えに失敗しました");
-    }
-  }
-
   function handleCreated(created: Initiative) {
     setInitiatives((prev) => [...prev, { ...created, tasks: [] }]);
     router.refresh();
@@ -76,12 +56,28 @@ export function InitiativesSection({
     setInitiatives((prev) => prev.filter((i) => i.id !== id));
   }
 
-  const displayed = showArchived ? initialArchived : initiatives;
+  async function handlePriorityChange(id: string, priority: InitiativePriority) {
+    const previous = initiatives;
+    setInitiatives((prev) => prev.map((i) => (i.id === id ? { ...i, priority } : i)));
+    try {
+      const res = await fetch(`/api/initiatives/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priority }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setInitiatives(previous);
+      toast.error("更新に失敗しました");
+    }
+  }
+
+  const displayed = showArchived ? initialArchived : sortInitiatives(initiatives);
 
   return (
-    <div className="shadow-dreamy relative isolate rounded-3xl border-2 border-tint-pink-line bg-tint-pink p-4">
+    <div className="shadow-dreamy relative isolate rounded-3xl border-2 border-tint-pink-line bg-tint-pink p-3">
       <StarMotif className="pop-motif pop-twinkle top-3 right-4 size-5 text-[#FF8FBC] opacity-80" />
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-bold">
           📌 今取り組んでいること
           <span className="ml-2 text-sm font-normal text-muted-foreground">
@@ -106,30 +102,21 @@ export function InitiativesSection({
         <p className="rounded-2xl border border-dashed border-border py-6 text-center text-sm text-muted-foreground">
           {showArchived ? "アーカイブされた取り組みはありません" : "今取り組んでいることはまだありません"}
         </p>
-      ) : showArchived ? (
-        <div className="grid gap-3 sm:grid-cols-2">
+      ) : (
+        // CSS Gridは行ごとに高さが揃ってしまい、片方の列に丈の長いカードがあると
+        // もう片方の列の次のカードの上に不要な空白ができるため、
+        // 列ごとに上から隙間なく詰まるmasonryレイアウト(CSS columns)にしている。
+        <div className="columns-1 gap-1.5 sm:columns-2">
           {displayed.map((initiative) => (
-            <InitiativeCard
-              key={initiative.id}
-              initiative={initiative}
-              onRemoved={handleRemoved}
-            />
+            <div key={initiative.id} className="mb-1 break-inside-avoid">
+              <InitiativeCard
+                initiative={initiative}
+                onRemoved={handleRemoved}
+                onPriorityChange={handlePriorityChange}
+              />
+            </div>
           ))}
         </div>
-      ) : (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={initiatives.map((i) => i.id)} strategy={rectSortingStrategy}>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {initiatives.map((initiative) => (
-                <InitiativeCard
-                  key={initiative.id}
-                  initiative={initiative}
-                  onRemoved={handleRemoved}
-                />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
       )}
     </div>
   );

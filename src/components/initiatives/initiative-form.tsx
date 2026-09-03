@@ -14,9 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { INITIATIVE_STATUS_LABELS } from "./initiative-status-badge";
+import { INITIATIVE_PRIORITY_LABELS } from "./initiative-priority-badge";
 import type { Initiative } from "@/lib/initiatives/types";
-import type { InitiativeStatus } from "@/types/database.types";
+import type { InitiativePriority } from "@/types/database.types";
 
 export function InitiativeForm({
   mode,
@@ -33,7 +33,7 @@ export function InitiativeForm({
   const [submitting, setSubmitting] = useState(false);
 
   const [title, setTitle] = useState(initiative?.title ?? "");
-  const [status, setStatus] = useState<InitiativeStatus>(initiative?.status ?? "want");
+  const [priority, setPriority] = useState<InitiativePriority>(initiative?.priority ?? "B");
   const [nextAction, setNextAction] = useState(initiative?.next_action ?? "");
   const [memo, setMemo] = useState(initiative?.memo ?? "");
   const [dueDate, setDueDate] = useState(initiative?.due_date ?? "");
@@ -44,7 +44,7 @@ export function InitiativeForm({
     try {
       const payload = {
         title,
-        status,
+        priority,
         next_action: nextAction || null,
         memo: memo || null,
         due_date: dueDate || null,
@@ -88,19 +88,19 @@ export function InitiativeForm({
       </div>
 
       <div className="space-y-2">
-        <Label>ステータス</Label>
+        <Label>優先度</Label>
         <Select
-          items={INITIATIVE_STATUS_LABELS}
-          value={status}
-          onValueChange={(v: string | null) => v && setStatus(v as InitiativeStatus)}
+          items={INITIATIVE_PRIORITY_LABELS}
+          value={priority}
+          onValueChange={(v: string | null) => v && setPriority(v as InitiativePriority)}
         >
-          <SelectTrigger className="w-full sm:w-48">
+          <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {(Object.keys(INITIATIVE_STATUS_LABELS) as InitiativeStatus[]).map((s) => (
-              <SelectItem key={s} value={s}>
-                {INITIATIVE_STATUS_LABELS[s]}
+            {(Object.keys(INITIATIVE_PRIORITY_LABELS) as InitiativePriority[]).map((p) => (
+              <SelectItem key={p} value={p}>
+                {INITIATIVE_PRIORITY_LABELS[p]}
               </SelectItem>
             ))}
           </SelectContent>
@@ -109,21 +109,16 @@ export function InitiativeForm({
 
       <div className="space-y-2">
         <Label htmlFor="initiative-next">次にやること</Label>
-        <p className="text-xs text-muted-foreground">直近で自分がやるアクション</p>
         <Textarea
           id="initiative-next"
           value={nextAction}
           onChange={(e) => setNextAction(e.target.value)}
           rows={2}
-          placeholder="例: 海外送金方法を決めて支払う"
         />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="initiative-memo">メモ</Label>
-        <p className="text-xs text-muted-foreground">
-          思いついたことを自由に書けるメモです。Todoにするほどではない確認事項や忘れたくないことなど。
-        </p>
         <Textarea
           id="initiative-memo"
           value={memo}

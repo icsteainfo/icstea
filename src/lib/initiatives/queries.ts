@@ -74,7 +74,7 @@ export async function createInitiative(
     .from("initiatives")
     .insert({
       title: input.title,
-      status: input.status ?? "want",
+      priority: input.priority ?? "B",
       next_action: input.next_action || null,
       memo: input.memo || null,
       due_date: input.due_date || null,
@@ -94,7 +94,7 @@ export async function updateInitiative(
   const patch: Database["public"]["Tables"]["initiatives"]["Update"] = {};
 
   if (input.title !== undefined) patch.title = input.title;
-  if (input.status !== undefined) patch.status = input.status;
+  if (input.priority !== undefined) patch.priority = input.priority;
   if (input.next_action !== undefined) patch.next_action = input.next_action || null;
   if (input.memo !== undefined) patch.memo = input.memo || null;
   if (input.due_date !== undefined) patch.due_date = input.due_date || null;
@@ -113,15 +113,4 @@ export async function updateInitiative(
 export async function deleteInitiative(supabase: Client, id: string): Promise<void> {
   const { error } = await supabase.from("initiatives").delete().eq("id", id);
   if (error) throw error;
-}
-
-export async function reorderInitiatives(
-  supabase: Client,
-  orderedIds: string[],
-): Promise<void> {
-  await Promise.all(
-    orderedIds.map((id, index) =>
-      supabase.from("initiatives").update({ sort_order: index }).eq("id", id),
-    ),
-  );
 }

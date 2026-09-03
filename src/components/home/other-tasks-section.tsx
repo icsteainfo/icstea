@@ -1,4 +1,4 @@
-import { TaskListItem } from "@/components/tasks/task-list-item";
+import { TaskRowCompact } from "@/components/tasks/task-row-compact";
 import { HomeSection, type HomeSectionTint } from "./section";
 import type { TaskWithRelations } from "@/lib/tasks/types";
 
@@ -16,6 +16,15 @@ const TITLE_TINT: Record<string, HomeSectionTint> = {
   完了済み: "yellow",
 };
 
+// 今週・今月・期限未定は、ホームを開いた時点で全体像が見えるよう最初から開いた状態にする。
+// 完了済みは頻繁に見るものではないため、従来通り閉じた状態から始める。
+const DEFAULT_OPEN: Record<string, boolean> = {
+  今週: true,
+  今月: true,
+  期限未定: true,
+  完了済み: false,
+};
+
 export function OtherTasksSection({
   title,
   tasks,
@@ -29,12 +38,14 @@ export function OtherTasksSection({
       emptyMessage={EMPTY_MESSAGES[title]}
       count={tasks.length}
       collapsible
-      defaultOpen={false}
+      defaultOpen={DEFAULT_OPEN[title]}
       tint={TITLE_TINT[title]}
     >
-      {tasks.map((task) => (
-        <TaskListItem key={task.id} task={task} />
-      ))}
+      <div>
+        {tasks.map((task) => (
+          <TaskRowCompact key={task.id} task={task} />
+        ))}
+      </div>
     </HomeSection>
   );
 }

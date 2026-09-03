@@ -5,13 +5,9 @@ import {
   bucketOtherTasks,
   buildTodayItems,
   getTodayDateString,
-  isDelegated,
-  isWaitingTask,
   sortTasksFallback,
 } from "@/lib/tasks/classify";
 import { UrgentSection } from "@/components/home/urgent-section";
-import { DelegatedSection } from "@/components/home/delegated-section";
-import { WaitingSection } from "@/components/home/waiting-section";
 import { OtherTasksSection } from "@/components/home/other-tasks-section";
 import { InitiativesSection } from "@/components/home/initiatives-section";
 import { InventoryAlertSection } from "@/components/home/inventory-alert-section";
@@ -49,12 +45,6 @@ export default async function HomePage() {
     ]);
 
   const urgentItems = buildTodayItems(tasks, today);
-  const delegatedTasks = sortTasksFallback(tasks.filter(isDelegated), today);
-  const waitingTasks = [...tasks.filter(isWaitingTask)].sort((a, b) => {
-    const af = a.waiting_follow_up_date ?? "9999-99-99";
-    const bf = b.waiting_follow_up_date ?? "9999-99-99";
-    return af < bf ? -1 : af > bf ? 1 : 0;
-  });
 
   const weekTasks = sortTasksFallback(bucketOtherTasks(tasks, "week", today), today);
   const monthTasks = sortTasksFallback(bucketOtherTasks(tasks, "month", today), today);
@@ -62,7 +52,7 @@ export default async function HomePage() {
   const completedTasks = bucketOtherTasks(tasks, "completed", today);
 
   return (
-    <div className="relative isolate -mx-4 -my-6 space-y-8 bg-background px-4 py-6">
+    <div className="relative isolate -mx-4 -my-6 space-y-4 bg-background px-4 py-6">
       {/* 装飾: ページ上部に控えめな虹のアーチ */}
       <RainbowMotif
         aria-hidden
@@ -88,8 +78,6 @@ export default async function HomePage() {
       <UrgentSection items={urgentItems} />
       <InventoryCheckAlertSection alerts={inventoryCheckAlerts} />
       <InventoryAlertSection products={products} />
-      <DelegatedSection tasks={delegatedTasks} />
-      <WaitingSection tasks={waitingTasks} />
       <OtherTasksSection title="今週" tasks={weekTasks} />
       <OtherTasksSection title="今月" tasks={monthTasks} />
       <OtherTasksSection title="期限未定" tasks={undatedTasks} />

@@ -5,9 +5,9 @@ import type { InventoryCheckAlert } from "@/lib/inventory/types";
 
 export function InventoryCheckAlertSection({ alerts }: { alerts: InventoryCheckAlert[] }) {
   return (
-    <section className="shadow-dreamy relative isolate rounded-3xl border-2 border-tint-yellow-line bg-tint-yellow p-4">
+    <section className="shadow-dreamy relative isolate rounded-3xl border-2 border-tint-yellow-line bg-tint-yellow p-3">
       <SparkleMotif className="pop-motif pop-twinkle top-3 right-4 size-5 text-[#C98A00] opacity-80" />
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+      <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-bold">
           ⚠️ 今週の在庫対応
           {alerts.length > 0 && (
@@ -30,7 +30,7 @@ export function InventoryCheckAlertSection({ alerts }: { alerts: InventoryCheckA
           対応が必要な在庫はありません
         </p>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {alerts.map((alert) => (
             <div
               key={alert.id}

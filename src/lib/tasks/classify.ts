@@ -42,14 +42,6 @@ export function isActionableToday(
   return effectiveStart <= today;
 }
 
-export function isDelegated(task: TaskWithRelations): boolean {
-  return isOpen(task) && task.assignee_type === "staff";
-}
-
-export function isWaitingTask(task: TaskWithRelations): boolean {
-  return isOpen(task) && task.is_waiting;
-}
-
 // Phase 8でAIの優先順位付けに置き換えるまでの仮の並び替え:
 // 期限超過を最優先、次に優先度、次に期限の近さ
 const PRIORITY_ORDER: Record<TaskWithRelations["priority_level"], number> = {
@@ -152,32 +144,6 @@ export function sortTodayItems(
 
     return todayItemCreatedAt(a) < todayItemCreatedAt(b) ? -1 : 1;
   });
-}
-
-export function groupByStaff(
-  tasks: TaskWithRelations[],
-): { staffId: string; staffName: string; tasks: TaskWithRelations[] }[] {
-  const groups = new Map<
-    string,
-    { staffId: string; staffName: string; tasks: TaskWithRelations[] }
-  >();
-
-  for (const task of tasks) {
-    if (!task.assignee_staff_id) continue;
-    const key = task.assignee_staff_id;
-    if (!groups.has(key)) {
-      groups.set(key, {
-        staffId: key,
-        staffName: task.assignee_name,
-        tasks: [],
-      });
-    }
-    groups.get(key)!.tasks.push(task);
-  }
-
-  return Array.from(groups.values()).sort((a, b) =>
-    a.staffName.localeCompare(b.staffName, "ja"),
-  );
 }
 
 // カテゴリーごとにグループ化し、各カテゴリー内は優先度が高い順→期限が近い順(期限なしは最後)に並べる。

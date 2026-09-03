@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
-import { TaskListItem } from "@/components/tasks/task-list-item";
+import { TaskRowCompact } from "@/components/tasks/task-row-compact";
 import type { TaskWithRelations } from "@/lib/tasks/types";
 
 // 取り組みカード内で「関連タスク N件」をクリックすると展開する一覧。
@@ -26,13 +26,13 @@ export function InitiativeTodoList({ tasks }: { tasks: TaskWithRelations[] }) {
         関連タスク {tasks.length}件
       </button>
       {open && (
-        <div className="space-y-2 pt-1">
+        <div className="pt-1">
           {tasks.length === 0 ? (
             <p className="py-2 text-center text-xs text-muted-foreground">
               関連タスクはまだありません
             </p>
           ) : (
-            tasks.map((task) => <TaskListItem key={task.id} task={task} />)
+            tasks.map((task) => <TaskRowCompact key={task.id} task={task} />)
           )}
         </div>
       )}

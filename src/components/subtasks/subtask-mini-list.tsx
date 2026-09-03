@@ -21,6 +21,8 @@ export function SubtaskMiniList({ subtasks }: { subtasks: SubtaskWithRelations[]
 
   if (subtasks.length === 0) return null;
 
+  const completedCount = subtasks.filter((s) => s.status === "completed").length;
+
   async function handleToggle(subtaskId: string, completed: boolean) {
     try {
       const res = await fetch(`/api/subtasks/${subtaskId}/complete`, {
@@ -36,7 +38,7 @@ export function SubtaskMiniList({ subtasks }: { subtasks: SubtaskWithRelations[]
   }
 
   return (
-    <div className="mt-2 pl-9">
+    <div className="mt-1 pl-8">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -47,7 +49,7 @@ export function SubtaskMiniList({ subtasks }: { subtasks: SubtaskWithRelations[]
         ) : (
           <ChevronRightIcon className="size-3" />
         )}
-        サブタスクを{open ? "隠す" : "表示"}
+        サブタスク {completedCount}/{subtasks.length}
       </button>
       {open && (
         <div className="mt-1.5 space-y-1.5 border-l-2 pl-3">
