@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { StarMotif } from "./motifs";
+import { IdolEmptyState } from "@/components/idol/idol-image";
 import { InitiativeCard } from "@/components/initiatives/initiative-card";
 import { AddInitiativeButton } from "@/components/initiatives/add-initiative-button";
 import { INITIATIVE_PRIORITY_ORDER } from "@/components/initiatives/initiative-priority-badge";
@@ -99,9 +100,13 @@ export function InitiativesSection({
       </div>
 
       {displayed.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-border py-6 text-center text-sm text-muted-foreground">
-          {showArchived ? "アーカイブされた取り組みはありません" : "今取り組んでいることはまだありません"}
-        </p>
+        showArchived ? (
+          <p className="rounded-2xl border border-dashed border-border py-6 text-center text-sm text-muted-foreground">
+            アーカイブされた取り組みはありません
+          </p>
+        ) : (
+          <IdolEmptyState message="今取り組んでいることはまだありません" caption="いったん落ち着いてます" />
+        )
       ) : (
         // CSS Gridは行ごとに高さが揃ってしまい、片方の列に丈の長いカードがあると
         // もう片方の列の次のカードの上に不要な空白ができるため、

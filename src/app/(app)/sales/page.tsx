@@ -20,6 +20,7 @@ import { SalesImportForm } from "@/components/sales/sales-import-form";
 import { SalesTargetForm } from "@/components/sales/sales-target-form";
 import { SalesPeriodTabs } from "@/components/sales/sales-period-tabs";
 import { formatPercent, formatYen } from "@/lib/sales/format";
+import { IdolBadge } from "@/components/idol/idol-image";
 import type { Channel } from "@/lib/sales/types";
 
 const CHANNEL_LABELS: Record<Channel, string> = {
@@ -86,11 +87,14 @@ export default async function SalesPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">売上分析</h1>
-        <p className="text-sm text-muted-foreground">
-          金額の集計・前年比較・構成比などはすべてAIを使わない自動計算です。
-        </p>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">売上分析</h1>
+          <p className="text-sm text-muted-foreground">
+            金額の集計・前年比較・構成比などはすべてAIを使わない自動計算です。
+          </p>
+        </div>
+        <IdolBadge imageKey="analytics" />
       </div>
 
       <SalesPeriodTabs period={period} date={date} range={currentRange} />

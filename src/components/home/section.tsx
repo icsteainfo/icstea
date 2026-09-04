@@ -27,6 +27,7 @@ export function HomeSection({
   title,
   description,
   emptyMessage,
+  emptySlot,
   count,
   collapsible,
   defaultOpen,
@@ -36,6 +37,8 @@ export function HomeSection({
   title: string;
   description?: string;
   emptyMessage: string;
+  /** 空状態の表示を差し替えたいとき(推し画像入りの空状態など)に渡す */
+  emptySlot?: ReactNode;
   count: number;
   collapsible?: boolean;
   defaultOpen?: boolean;
@@ -53,9 +56,11 @@ export function HomeSection({
 
   const body =
     count === 0 ? (
-      <p className="rounded-2xl border border-dashed border-border py-6 text-center text-sm text-muted-foreground">
-        {emptyMessage}
-      </p>
+      emptySlot ?? (
+        <p className="rounded-2xl border border-dashed border-border py-6 text-center text-sm text-muted-foreground">
+          {emptyMessage}
+        </p>
+      )
     ) : (
       <div className="space-y-2">{children}</div>
     );

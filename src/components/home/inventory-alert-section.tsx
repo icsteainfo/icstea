@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { computeReorderStatus, computeUsageStats } from "@/lib/inventory/reorder";
 import { CreateReorderTaskButton } from "@/components/inventory/create-reorder-task-button";
 import { CloudMotif } from "./motifs";
+import { IdolEmptyState } from "@/components/idol/idol-image";
 import type { ProductWithStock } from "@/lib/inventory/types";
 
 export function InventoryAlertSection({
@@ -35,9 +36,7 @@ export function InventoryAlertSection({
       </div>
 
       {needsReorder.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-border bg-card py-6 text-center text-sm text-muted-foreground">
-          現在、発注が必要な商品はありません
-        </p>
+        <IdolEmptyState message="発注対象なし" caption="今日も順調" className="bg-card" />
       ) : (
         <div className="space-y-1.5">
           {needsReorder.map(({ product, status }) => {

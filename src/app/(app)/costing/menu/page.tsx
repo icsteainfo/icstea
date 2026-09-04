@@ -9,6 +9,7 @@ import {
   type MenuCategoryItem,
 } from "@/components/costing/menu-category-list";
 import { OTHER_RECIPE_CATEGORY, RECIPE_CATEGORIES } from "@/lib/costing/types";
+import { IdolBadge } from "@/components/idol/idol-image";
 import type { MenuItem } from "@/lib/sales/types";
 
 export default async function MenuRecipesPage() {
@@ -74,9 +75,12 @@ export default async function MenuRecipesPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          カテゴリーごとにグループ化して表示しています。商品名をタップすると編集画面に移動、グリップ(⠿)をドラッグすると並び替えできます。原価率が出せない商品には⚠️がつきます。
-        </p>
+        <div className="flex items-center gap-3">
+          <IdolBadge imageKey="cost" />
+          <p className="text-sm text-muted-foreground">
+            カテゴリーごとにグループ化して表示しています。商品名をタップすると編集画面に移動、グリップ(⠿)をドラッグすると並び替えできます。原価率が出せない商品には⚠️がつきます。
+          </p>
+        </div>
         <Button render={<Link href="/costing/menu/new">＋ 商品レシピを追加</Link>} />
       </div>
 
