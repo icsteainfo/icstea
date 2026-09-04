@@ -11,7 +11,6 @@ import { UrgentSection } from "@/components/home/urgent-section";
 import { OtherTasksSection } from "@/components/home/other-tasks-section";
 import { InitiativesSection } from "@/components/home/initiatives-section";
 import { InventoryAlertSection } from "@/components/home/inventory-alert-section";
-import { InventoryCheckAlertSection } from "@/components/home/inventory-check-alert-section";
 import { NewTaskMenuButton } from "@/components/tasks/new-task-menu-button";
 import { QuickMemoSection } from "@/components/home/quick-memo-section";
 import {
@@ -22,10 +21,7 @@ import {
   RainbowMotif,
 } from "@/components/home/motifs";
 import { generateDueRecurringInstances } from "@/lib/tasks/recurrence";
-import {
-  listLatestInventoryCheckAlerts,
-  listProductsWithLatestStock,
-} from "@/lib/inventory/queries";
+import { listProductsWithLatestStock } from "@/lib/inventory/queries";
 import { getQuickMemo } from "@/lib/quick-memo/queries";
 
 export default async function HomePage() {
@@ -34,11 +30,10 @@ export default async function HomePage() {
   await generateDueRecurringInstances(supabase);
   const today = getTodayDateString();
 
-  const [tasks, products, inventoryCheckAlerts, quickMemo, activeInitiatives, archivedInitiatives] =
+  const [tasks, products, quickMemo, activeInitiatives, archivedInitiatives] =
     await Promise.all([
       listTasks(supabase, {}),
       listProductsWithLatestStock(supabase),
-      listLatestInventoryCheckAlerts(supabase),
       getQuickMemo(supabase),
       listInitiatives(supabase, { archived: false }),
       listInitiatives(supabase, { archived: true }),
@@ -76,7 +71,6 @@ export default async function HomePage() {
       />
 
       <UrgentSection items={urgentItems} />
-      <InventoryCheckAlertSection alerts={inventoryCheckAlerts} />
       <InventoryAlertSection products={products} />
       <OtherTasksSection title="今週" tasks={weekTasks} />
       <OtherTasksSection title="今月" tasks={monthTasks} />

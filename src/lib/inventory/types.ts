@@ -69,21 +69,3 @@ export function effectiveMaterialCategory(product: Pick<Product, "category" | "m
   const raw = product.material_category || product.category;
   return LEGACY_CATEGORY_ALIASES[raw] ?? raw;
 }
-
-// Googleスプレッドシート「在庫_ネット確認」タブで×判定になった商品の記録。
-// 1回の同期(=1つのchecked_on)ごとに、その時点で×だった商品だけを保存する。
-export type InventoryCheckResult = {
-  id: string;
-  checked_on: string;
-  product_id: string;
-  product_name: string;
-  required_text: string | null;
-  current_text: string | null;
-  shortage: number | null;
-  task_id: string | null;
-  created_at: string;
-};
-
-export type InventoryCheckAlert = InventoryCheckResult & {
-  task_status: "open" | "completed" | null;
-};

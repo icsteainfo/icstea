@@ -3,13 +3,7 @@ import type { Database } from "@/types/database.types";
 import type { ProductInput, ProductUpdateInput } from "@/lib/validation/product";
 import { getProductUsage } from "@/lib/costing/product-usage";
 import type { ProductUsage } from "@/lib/costing/types";
-import type {
-  InventoryCheckAlert,
-  InventoryCheckResult,
-  Product,
-  ProductWithStock,
-  StockSnapshot,
-} from "./types";
+import type { Product, ProductWithStock, StockSnapshot } from "./types";
 
 type Client = SupabaseClient<Database>;
 
@@ -379,34 +373,6 @@ export async function resolveReorderTask(
     .update({ memo, status: "completed", completed_at: new Date().toISOString() })
     .eq("id", taskId);
   if (error) throw error;
-}
-
-// 直近の在庫チェック(最新のchecked_on)で×判定だった商品を、
-// 紐づくタスクが未完了のものだけホーム画面のアラート用に取得する。
-export async function listLatestInventoryCheckAlerts(
-  supabase: Client,
-): Promise<InventoryCheckAlert[]> {
-  const { data: latest, error: latestError } = await supabase
-    .from("inventory_check_results")
-    .select("checked_on")
-    .order("checked_on", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (latestError) throw latestError;
-  if (!latest) return [];
-
-  const { data, error } = await supabase
-    .from("inventory_check_results")
-    .select("*, tasks(status)")
-    .eq("checked_on", latest.checked_on);
-  if (error) throw error;
-
-  return (data as unknown as (InventoryCheckResult & { tasks: { status: "open" | "completed" } | null })[])
-    .filter((row) => !row.tasks || row.tasks.status === "open")
-    .map((row) => {
-      const { tasks, ...rest } = row;
-      return { ...rest, task_status: tasks?.status ?? null };
-    });
 }
 
 // 指定した日付より前の、各商品の最新の在庫記録を取得する。

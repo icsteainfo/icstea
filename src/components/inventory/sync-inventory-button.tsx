@@ -29,16 +29,6 @@ export function SyncInventoryButton({
       toast.success(
         `在庫を取り込みました(${data.snapshotsRecorded}件、新規商品${data.productsAdded}件${restockNote})`,
       );
-
-      if (data.checkError) {
-        toast.error(`在庫チェック(◎/×)の取り込みに失敗しました: ${data.checkError}`);
-      } else if (data.check) {
-        const resolvedNote =
-          data.check.tasksResolved > 0 ? `、解消${data.check.tasksResolved}件` : "";
-        toast.success(
-          `在庫チェック: ×判定${data.check.processed}件(新規Todo${data.check.tasksCreated}件、更新${data.check.tasksUpdated}件${resolvedNote})`,
-        );
-      }
       router.refresh();
     } catch (err) {
       toast.error(
