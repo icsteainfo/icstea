@@ -5,12 +5,14 @@ import { CloudMotif, FlowerMotif, HeartMotif, SparkleMotif, StarMotif } from "./
 
 export type HomeSectionTint = "pink" | "green" | "blue" | "yellow" | "lavender";
 
+// セクションの背景はあくまで「見出し・枠線と合わせて種類を示す薄い地色」に留め、
+// 中の行(TaskRowCompactなど)を白ベースで読みやすくするための余地を残す。
 const TINT_CLASSES: Record<HomeSectionTint, string> = {
-  pink: "bg-tint-pink border-tint-pink-line",
-  green: "bg-tint-green border-tint-green-line",
-  blue: "bg-tint-blue border-tint-blue-line",
-  yellow: "bg-tint-yellow border-tint-yellow-line",
-  lavender: "bg-tint-lavender border-tint-lavender-line",
+  pink: "bg-tint-pink/20 border-tint-pink-line",
+  green: "bg-tint-green/20 border-tint-green-line",
+  blue: "bg-tint-blue/20 border-tint-blue-line",
+  yellow: "bg-tint-yellow/20 border-tint-yellow-line",
+  lavender: "bg-tint-lavender/20 border-tint-lavender-line",
 };
 
 const TINT_MOTIF: Record<HomeSectionTint, ReactNode> = {

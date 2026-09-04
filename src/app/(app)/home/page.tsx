@@ -3,11 +3,11 @@ import { listTasks } from "@/lib/tasks/queries";
 import { listInitiatives } from "@/lib/initiatives/queries";
 import {
   bucketOtherTasks,
-  buildTodayItems,
   getTodayDateString,
+  groupTasksByDueDate,
   sortTasksFallback,
 } from "@/lib/tasks/classify";
-import { UrgentSection } from "@/components/home/urgent-section";
+import { TaskTimelineSection } from "@/components/home/task-timeline-section";
 import { OtherTasksSection } from "@/components/home/other-tasks-section";
 import { InitiativesSection } from "@/components/home/initiatives-section";
 import { NewTaskMenuButton } from "@/components/tasks/new-task-menu-button";
@@ -36,12 +36,9 @@ export default async function HomePage() {
       listInitiatives(supabase, { archived: true }),
     ]);
 
-  const urgentItems = buildTodayItems(tasks, today);
-
-  const weekTasks = sortTasksFallback(bucketOtherTasks(tasks, "week", today), today);
-  const monthTasks = sortTasksFallback(bucketOtherTasks(tasks, "month", today), today);
-  const undatedTasks = sortTasksFallback(bucketOtherTasks(tasks, "undated", today), today);
-  const completedTasks = bucketOtherTasks(tasks, "completed", today);
+  const dateGroups = groupTasksByDueDate(tasks, today);
+  const undatedTasks = sortTasksFallback(bucketOtherTasks(tasks, "undated"), today);
+  const completedTasks = bucketOtherTasks(tasks, "completed");
 
   return (
     <div className="relative isolate -mx-4 -my-6 space-y-4 bg-background px-4 py-6">
@@ -67,9 +64,7 @@ export default async function HomePage() {
         initialArchived={archivedInitiatives}
       />
 
-      <UrgentSection items={urgentItems} />
-      <OtherTasksSection title="今週" tasks={weekTasks} />
-      <OtherTasksSection title="今月" tasks={monthTasks} />
+      <TaskTimelineSection groups={dateGroups} />
       <OtherTasksSection title="期限未定" tasks={undatedTasks} />
       <OtherTasksSection title="完了済み" tasks={completedTasks} />
 

@@ -15,13 +15,25 @@ function formatDate(dateStr: string | null) {
 // チェックボックス・Todo名・期限・編集/複製/削除だけを常時表示し、
 // 優先度・カテゴリー・担当者などのタグは非表示にする(データ自体は編集画面で維持)。
 // サブタスクがある場合のみ「サブタスク ○/○」を展開できるようにする。
-export function TaskRowCompact({ task }: { task: TaskWithRelations }) {
+// showDueDate=falseのときは期限を表示しない(日付見出しでグループ化している場合など、
+// 見出し自体が期限を表しているため行内では省略したいときに使う)。
+export function TaskRowCompact({
+  task,
+  showDueDate = true,
+}: {
+  task: TaskWithRelations;
+  showDueDate?: boolean;
+}) {
   const isCompleted = task.status === "completed";
   const { openEdit, handleDuplicateClick, openDeleteConfirm, loadingLists, duplicating, dialogs } =
     useTaskCardActions(task);
 
   return (
-    <div className="border-b border-border/60 py-1.5 last:border-b-0">
+    // 薄い色のセクション背景の中でも本文が読みやすいよう、行自体はごく淡いピンクの
+    // 2色(row-odd/row-even)で塗り分ける。差はごくわずかにして、離れて見ると
+    // ほぼ同じ地色に見える程度に留め、行の区切りは主に下線(境界線)で示す。
+    // セクションの色(在庫は青、期限未定は紫…)に関わらず、行の地色は常にこの2色。
+    <div className="border-b border-border/50 odd:bg-row-odd even:bg-row-even px-2 py-1.5 last:border-b-0">
       <div className="flex items-center gap-2">
         <TaskCheckbox
           taskId={task.id}
@@ -37,7 +49,7 @@ export function TaskRowCompact({ task }: { task: TaskWithRelations }) {
             {task.title}
           </span>
         </button>
-        {task.due_date && (
+        {showDueDate && task.due_date && (
           <span className="shrink-0 text-xs text-muted-foreground">{formatDate(task.due_date)}</span>
         )}
         <TaskCardActions

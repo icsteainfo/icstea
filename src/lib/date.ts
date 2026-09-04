@@ -44,3 +44,12 @@ export function getMonthRange(dateStr: string): { start: string; end: string } {
     end: makeDateString(y, m, getLastDayOfMonth(y, m)),
   };
 }
+
+const WEEKDAY_LABELS = ["日", "月", "火", "水", "木", "金", "土"];
+
+// 「9/9（水）」のような、月/日+曜日のラベルを作る(ホームのTodo日付見出し用)
+export function formatMonthDayWeekday(dateStr: string): string {
+  const [, m, d] = dateStr.split("-");
+  const weekday = WEEKDAY_LABELS[getWeekday(dateStr)];
+  return `${Number(m)}/${Number(d)}（${weekday}）`;
+}

@@ -58,6 +58,11 @@
   --color-tint-lavender: var(--tint-lavender);
   --color-tint-lavender-line: var(--tint-lavender-line);
   --color-brand-pink: var(--brand-pink);
+  /* Todo一覧の行を1行ずつ追いやすくするための、ごく淡いzebra striping用の2色。
+     どちらもセクションの地色(青・紫・黄…)には関係なく常にこの薄いピンク系で統一し、
+     離れて見るとほぼ同じ地色に見える程度の差に留める。 */
+  --color-row-odd: var(--row-odd);
+  --color-row-even: var(--row-even);
   --radius-sm: calc(var(--radius) * 0.55);
   --radius-md: calc(var(--radius) * 0.75);
   --radius-lg: var(--radius);
@@ -121,6 +126,9 @@
   --tint-lavender: #ece2fc;
   --tint-lavender-line: #a97ef0;
 
+  --row-odd: #fffdfe;
+  --row-even: #fff8fb;
+
   /* カードやボタンにのせる、色つきのぷっくりした影 */
   --shadow-dreamy-color: 214, 49, 111;
 }
@@ -171,6 +179,9 @@
   --tint-yellow-line: #ffe37e;
   --tint-lavender: #362a4a;
   --tint-lavender-line: #cdb7f6;
+
+  --row-odd: #3a2430;
+  --row-even: #3e2531;
 
   --shadow-dreamy-color: 0, 0, 0;
 }

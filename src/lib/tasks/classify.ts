@@ -1,5 +1,4 @@
-import { getMonthRange, getTodayDateString, getWeekRange } from "@/lib/date";
-import type { SubtaskWithRelations } from "@/lib/subtasks/types";
+import { addDays, formatMonthDayWeekday, getTodayDateString } from "@/lib/date";
 import type { TaskWithRelations } from "./types";
 
 export { getTodayDateString };
@@ -13,22 +12,6 @@ export function isOverdue(
   today: string = getTodayDateString(),
 ): boolean {
   return isOpen(task) && !task.is_waiting && !!task.due_date && task.due_date < today;
-}
-
-export function isDueToday(
-  task: TaskWithRelations,
-  today: string = getTodayDateString(),
-): boolean {
-  return isOpen(task) && !task.is_waiting && task.due_date === today;
-}
-
-// ⚠️要対応: 期限超過・本日期限・AIが緊急と判断したもの
-export function isUrgent(
-  task: TaskWithRelations,
-  today: string = getTodayDateString(),
-): boolean {
-  if (!isOpen(task) || task.is_waiting) return false;
-  return isOverdue(task, today) || isDueToday(task, today) || task.priority_level === "urgent";
 }
 
 // 今日やること: 今日までにやるべきもの(期限超過分も含む)。対応待ちは除く。
@@ -71,78 +54,6 @@ export function sortTasksFallback(
     }
 
     return a.created_at < b.created_at ? -1 : 1;
-  });
-}
-
-export function isSubtaskActionableToday(
-  subtask: SubtaskWithRelations,
-  today: string = getTodayDateString(),
-): boolean {
-  return subtask.status === "open" && !!subtask.due_date && subtask.due_date <= today;
-}
-
-// ホーム画面「⚠️ 要対応」に表示する項目(大項目そのもの、またはサブタスク単位)。
-// 「今日やること」は「要対応」と大きく重なるため統合しており、期限超過・本日期限・
-// 優先度が緊急の大項目・期間中のTodoをまとめて対象にする(旧「今日やること」の範囲を含む)
-export type TodayItem =
-  | { kind: "task"; task: TaskWithRelations }
-  | { kind: "subtask"; subtask: SubtaskWithRelations; parentTask: TaskWithRelations };
-
-// 大項目が要対応(期限超過・本日期限・優先度緊急・期間中)でなくても、
-// サブタスクの期限が今日までなら、そのサブタスクだけを混ぜて表示する
-export function buildTodayItems(
-  tasks: TaskWithRelations[],
-  today: string = getTodayDateString(),
-): TodayItem[] {
-  const items: TodayItem[] = [];
-  for (const task of tasks) {
-    if (isUrgent(task, today) || isActionableToday(task, today)) {
-      items.push({ kind: "task", task });
-    }
-    for (const subtask of task.subtasks) {
-      if (isSubtaskActionableToday(subtask, today)) {
-        items.push({ kind: "subtask", subtask, parentTask: task });
-      }
-    }
-  }
-  return sortTodayItems(items, today);
-}
-
-function todayItemDueDate(item: TodayItem): string | null {
-  return item.kind === "task" ? item.task.due_date : item.subtask.due_date;
-}
-
-function todayItemPriorityRank(item: TodayItem): number {
-  return item.kind === "task" ? PRIORITY_ORDER[item.task.priority_level] : PRIORITY_ORDER.medium;
-}
-
-function todayItemCreatedAt(item: TodayItem): string {
-  return item.kind === "task" ? item.task.created_at : item.subtask.created_at;
-}
-
-// 期限切れ(期限超過)を最優先、次に優先度が高い順、次に期限が近い順(期限なしは最後)で並べる
-export function sortTodayItems(
-  items: TodayItem[],
-  today: string = getTodayDateString(),
-): TodayItem[] {
-  return [...items].sort((a, b) => {
-    const aDue = todayItemDueDate(a);
-    const bDue = todayItemDueDate(b);
-    const aOverdue = aDue && aDue < today ? 0 : 1;
-    const bOverdue = bDue && bDue < today ? 0 : 1;
-    if (aOverdue !== bOverdue) return aOverdue - bOverdue;
-
-    const aPriority = todayItemPriorityRank(a);
-    const bPriority = todayItemPriorityRank(b);
-    if (aPriority !== bPriority) return aPriority - bPriority;
-
-    if (aDue !== bDue) {
-      if (!aDue) return 1;
-      if (!bDue) return -1;
-      return aDue < bDue ? -1 : 1;
-    }
-
-    return todayItemCreatedAt(a) < todayItemCreatedAt(b) ? -1 : 1;
   });
 }
 
@@ -189,34 +100,75 @@ export function groupTasksByCategory(
   return groups;
 }
 
-export type OtherTasksBucket = "today" | "week" | "month" | "undated" | "completed";
+export type OtherTasksBucket = "undated" | "completed";
 
 export function bucketOtherTasks(
   tasks: TaskWithRelations[],
   bucket: OtherTasksBucket,
-  today: string = getTodayDateString(),
 ): TaskWithRelations[] {
   if (bucket === "completed") {
     return tasks.filter((t) => t.status === "completed");
   }
+  return tasks.filter((t) => isOpen(t) && !t.due_date);
+}
 
-  const openTasks = tasks.filter(isOpen);
+export type TaskDateGroupKey = "overdue" | "today" | "tomorrow" | string;
 
-  if (bucket === "undated") {
-    return openTasks.filter((t) => !t.due_date);
+export type TaskDateGroup = {
+  key: TaskDateGroupKey;
+  label: string;
+  tasks: TaskWithRelations[];
+};
+
+// 期限が設定されているTodoを、Google Tasksのように「期限超過」「今日」「明日」
+// 「9/9（水）」…という日付見出しごとにグループ化する(期限未定はここには含めない)。
+// 期間タスク(start_date〜due_date)は、期限日が先でも進行中の間は「今日」に含める。
+function taskDueGroupKey(
+  task: TaskWithRelations,
+  today: string,
+  tomorrow: string,
+): "overdue" | "today" | string | null {
+  if (!task.due_date) return null;
+  if (task.due_date < today) return "overdue";
+  if (task.due_date === today) return "today";
+  if (isActionableToday(task, today)) return "today";
+  if (task.due_date === tomorrow) return "tomorrow";
+  return task.due_date;
+}
+
+export function groupTasksByDueDate(
+  tasks: TaskWithRelations[],
+  today: string = getTodayDateString(),
+): TaskDateGroup[] {
+  const tomorrow = addDays(today, 1);
+  const buckets = new Map<string, TaskWithRelations[]>();
+
+  for (const task of tasks) {
+    if (!isOpen(task)) continue;
+    const key = taskDueGroupKey(task, today, tomorrow);
+    if (key === null) continue; // 期限未定は別セクションで扱う
+    const list = buckets.get(key) ?? [];
+    list.push(task);
+    buckets.set(key, list);
   }
-  if (bucket === "today") {
-    return openTasks.filter((t) => t.due_date === today);
+
+  const groups: TaskDateGroup[] = [];
+
+  const overdue = buckets.get("overdue");
+  if (overdue) groups.push({ key: "overdue", label: "期限超過", tasks: sortTasksFallback(overdue, today) });
+
+  const dueToday = buckets.get("today");
+  if (dueToday) groups.push({ key: "today", label: "今日", tasks: sortTasksFallback(dueToday, today) });
+
+  const dueTomorrow = buckets.get("tomorrow");
+  if (dueTomorrow) groups.push({ key: "tomorrow", label: "明日", tasks: sortTasksFallback(dueTomorrow, today) });
+
+  const futureDates = [...buckets.keys()]
+    .filter((key) => key !== "overdue" && key !== "today" && key !== "tomorrow")
+    .sort();
+  for (const date of futureDates) {
+    groups.push({ key: date, label: formatMonthDayWeekday(date), tasks: sortTasksFallback(buckets.get(date)!, today) });
   }
-  if (bucket === "week") {
-    const { start, end } = getWeekRange(today);
-    return openTasks.filter(
-      (t) => t.due_date && t.due_date >= start && t.due_date <= end,
-    );
-  }
-  // month
-  const { start, end } = getMonthRange(today);
-  return openTasks.filter(
-    (t) => t.due_date && t.due_date >= start && t.due_date <= end,
-  );
+
+  return groups;
 }
