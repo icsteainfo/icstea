@@ -12,7 +12,6 @@ import { unitCost } from "@/lib/costing/calculations";
 import { findDuplicateCandidates } from "@/lib/inventory/duplicate-candidates";
 import { computeReorderStatus, computeUsageStats } from "@/lib/inventory/reorder";
 import { effectiveMaterialCategory } from "@/lib/inventory/types";
-import { IdolBadge } from "@/components/idol/idol-image";
 import type { ProductWithStock } from "@/lib/inventory/types";
 
 const URGENCY_BADGE: Record<
@@ -105,12 +104,9 @@ export default async function CostingMaterialsPage() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-3">
-          <IdolBadge imageKey="inventory" />
-          <p className="text-sm text-muted-foreground">
-            仕入・原価・茶葉の在庫・発注をまとめて管理します。カテゴリーごとにグループ化して表示しています。商品名をタップすると仕入価格などの詳細・編集画面に移動します。「整理する」で複数選択し、原価計算に使わない商品をまとめて非表示にできます。
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          仕入・原価・茶葉の在庫・発注をまとめて管理します。カテゴリーごとにグループ化して表示しています。商品名をタップすると仕入価格などの詳細・編集画面に移動します。「整理する」で複数選択し、原価計算に使わない商品をまとめて非表示にできます。
+        </p>
         <div className="flex gap-2">
           <SyncInventoryButton size="sm" />
           <Button variant="outline" render={<Link href="/products/new">＋ 原材料を追加</Link>} />

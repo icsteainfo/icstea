@@ -60,7 +60,7 @@ export function CampaignForm({ menuItems }: { menuItems: MenuItem[] }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border p-4">
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border bg-card p-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label>施策の種類</Label>

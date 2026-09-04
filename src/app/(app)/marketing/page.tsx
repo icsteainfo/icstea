@@ -10,7 +10,7 @@ import { addDays } from "@/lib/date";
 import { CampaignForm } from "@/components/marketing/campaign-form";
 import { CampaignList } from "@/components/marketing/campaign-list";
 import { CampaignWindowSelect } from "@/components/marketing/campaign-window-select";
-import { IdolBadge } from "@/components/idol/idol-image";
+import { IdolFigure } from "@/components/idol/idol-image";
 import type { DailyChannelSales, MenuItemSales } from "@/lib/sales/types";
 
 export default async function MarketingPage({
@@ -55,15 +55,17 @@ export default async function MarketingPage({
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">マーケティング</h1>
-          <p className="text-sm text-muted-foreground">
-            SNS投稿・広告・POP掲示などの施策を記録し、実施前後の売上・販売数の変化を確認できます。
-          </p>
-        </div>
-        <IdolBadge imageKey="marketing" />
+    <div className="relative isolate space-y-6">
+      <IdolFigure
+        imageKey="marketing"
+        className="top-0 right-0 h-[110px] md:h-[150px] lg:h-[190px]"
+      />
+
+      <div className="sm:pr-28 md:pr-36 lg:pr-44">
+        <h1 className="text-2xl font-semibold">マーケティング</h1>
+        <p className="text-sm text-muted-foreground">
+          SNS投稿・広告・POP掲示などの施策を記録し、実施前後の売上・販売数の変化を確認できます。
+        </p>
       </div>
 
       <CampaignForm menuItems={menuItems} />

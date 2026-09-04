@@ -21,7 +21,6 @@ import {
   CloudMotif,
   RainbowMotif,
 } from "@/components/home/motifs";
-import { IdolBadge } from "@/components/idol/idol-image";
 import { generateDueRecurringInstances } from "@/lib/tasks/recurrence";
 import {
   listLatestInventoryCheckAlerts,
@@ -66,10 +65,7 @@ export default async function HomePage() {
           ホーム
           <SparkleMotif className="pop-twinkle size-4 text-[#CDB7F6]" />
         </h1>
-        <div className="flex items-center gap-3">
-          <IdolBadge imageKey="home" />
-          <NewTaskMenuButton />
-        </div>
+        <NewTaskMenuButton />
       </div>
 
       <QuickMemoSection initialContent={quickMemo} />
