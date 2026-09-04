@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -164,7 +165,36 @@ export function TaskForm({
         throw new Error(body.error ?? "保存に失敗しました");
       }
 
-      toast.success(mode === "create" ? "タスクを登録しました" : "更新しました");
+      let recurrenceMessage = "";
+      if (mode === "edit" && isRecurring && !task?.recurrence_series_id) {
+        const recRes = await fetch(`/api/tasks/${task!.id}/create-recurrence`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            recurrence_type: recurrenceType,
+            recurrence_config:
+              recurrenceType === "weekly"
+                ? { weekday }
+                : recurrenceType === "monthly_on_day"
+                  ? { dayOfMonth }
+                  : null,
+            due_offset_days: 0,
+          }),
+        });
+        if (!recRes.ok) {
+          const body = await recRes.json().catch(() => ({}));
+          throw new Error(body.error ?? "繰り返しの設定に失敗しました");
+        }
+        recurrenceMessage = "繰り返し設定も保存しました";
+      }
+
+      toast.success(
+        mode === "create"
+          ? "タスクを登録しました"
+          : recurrenceMessage
+            ? `更新し、${recurrenceMessage}`
+            : "更新しました",
+      );
       if (onSaved) {
         onSaved();
       } else {
@@ -238,7 +268,7 @@ export function TaskForm({
         </Select>
       </div>
 
-      {!isRecurring && (
+      {!(mode === "create" && isRecurring) && (
         <div className="space-y-2">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
@@ -343,7 +373,21 @@ export function TaskForm({
         />
       </div>
 
-      {mode === "create" && (
+      {task?.recurrence_series_id ? (
+        <div className="space-y-1 rounded-lg border p-4">
+          <p className="text-sm font-medium">このTodoは繰り返し設定されています</p>
+          <p className="text-xs text-muted-foreground">
+            繰り返しのルールを変更したい場合は
+            <Link
+              href={`/recurrence/${task.recurrence_series_id}/edit`}
+              className="text-primary hover:underline"
+            >
+              繰り返しTodoの設定
+            </Link>
+            から編集してください。
+          </p>
+        </div>
+      ) : (
         <div className="space-y-3 rounded-lg border p-4">
           <div className="flex items-center gap-2">
             <Checkbox
