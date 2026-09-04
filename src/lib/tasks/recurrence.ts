@@ -53,7 +53,9 @@ function computeNextAfter(
   return computeNextOnOrAfter(series, addDays(afterDate, 1));
 }
 
-// 未生成分をすべて生成する(idempotent: 何度呼んでも重複生成しない)
+// 未生成分をすべて生成する(idempotent: 何度呼んでも重複生成しない)。
+// last_generated_due_date が未設定(登録直後)のシリーズは、初回の出現日が
+// 今日より後でも、登録してすぐホームに表示できるようその1件だけ即時生成する。
 export async function generateDueRecurringInstances(
   supabase: Client,
   today: string = getTodayDateString(),
@@ -67,16 +69,19 @@ export async function generateDueRecurringInstances(
   let generatedCount = 0;
 
   for (const series of seriesList ?? []) {
+    const isNewSeries = series.last_generated_due_date === null;
     let cursor = series.last_generated_due_date
       ? computeNextAfter(series, series.last_generated_due_date)
       : computeNextOnOrAfter(series, series.created_at.slice(0, 10));
 
     // 生成すべき日がないシリーズがほとんどのため、その場合はサブタスク取得すら不要
     // (ホームを開くたびに全アクティブシリーズ分の問い合わせが走り、体感速度を悪化させていた)
-    if (cursor > today) continue;
+    // ただし新規シリーズは、初回1件を必ず生成するためスキップしない
+    if (!isNewSeries && cursor > today) continue;
 
     let iterations = 0;
     let lastGenerated: string | null = null;
+    let generatedFirstOccurrence = false;
 
     // このシリーズに設定されたサブタスクのひな形(あれば、生成するTodoごとに複製する)
     const { data: seriesSubtasks, error: subtasksError } = await supabase
@@ -86,7 +91,10 @@ export async function generateDueRecurringInstances(
       .order("sort_order");
     if (subtasksError) throw subtasksError;
 
-    while (cursor <= today && iterations < MAX_ITERATIONS) {
+    while (
+      (cursor <= today || (isNewSeries && !generatedFirstOccurrence)) &&
+      iterations < MAX_ITERATIONS
+    ) {
       const dueDate = addDays(cursor, series.due_offset_days ?? 0);
 
       const { data: task, error: insertError } = await supabase
@@ -120,6 +128,7 @@ export async function generateDueRecurringInstances(
 
       generatedCount += 1;
       lastGenerated = cursor;
+      generatedFirstOccurrence = true;
       cursor = computeNextAfter(series, cursor);
       iterations += 1;
     }
