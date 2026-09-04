@@ -39,23 +39,6 @@ export type Product = {
   updated_at: string;
 };
 
-export type StockSnapshot = {
-  id: string;
-  product_id: string;
-  recorded_on: string;
-  quantity: number;
-  kitchen_back: number | null;
-  under_chair: number | null;
-  office: number | null;
-  warehouse: number | null;
-  created_at: string;
-};
-
-export type ProductWithStock = Product & {
-  latest_snapshot: StockSnapshot | null;
-  previous_snapshot: StockSnapshot | null;
-};
-
 // カテゴリー統一前の名称の違いを吸収するための対応表(DBの値そのものは書き換えない)。
 // 「トッピング・その他」は統一後「トッピング」という名称になったため、ここでだけ読み替える。
 const LEGACY_CATEGORY_ALIASES: Record<string, string> = {
