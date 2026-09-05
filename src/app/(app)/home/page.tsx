@@ -36,9 +36,13 @@ export default async function HomePage() {
       listInitiatives(supabase, { archived: true }),
     ]);
 
-  const dateGroups = groupTasksByDueDate(tasks, today);
-  const undatedTasks = sortTasksFallback(bucketOtherTasks(tasks, "undated"), today);
-  const completedTasks = bucketOtherTasks(tasks, "completed");
+  // 取り組みに紐づくタスクは各カード内の「関連タスク」にのみ表示し、
+  // ホーム下部のTodo一覧では重複させないよう除外する
+  const standaloneTasks = tasks.filter((task) => !task.initiative_id);
+
+  const dateGroups = groupTasksByDueDate(standaloneTasks, today);
+  const undatedTasks = sortTasksFallback(bucketOtherTasks(standaloneTasks, "undated"), today);
+  const completedTasks = bucketOtherTasks(standaloneTasks, "completed");
 
   return (
     <div className="relative isolate -mx-4 -my-6 space-y-4 bg-background px-4 py-6">
