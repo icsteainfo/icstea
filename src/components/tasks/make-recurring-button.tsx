@@ -60,7 +60,6 @@ export function MakeRecurringButton({
       }
       toast.success("繰り返しTodoに設定しました");
       setOpen(false);
-      router.push("/recurrence");
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "繰り返しの設定に失敗しました");

@@ -125,7 +125,7 @@ export function RecurrenceSeriesForm({
       }
 
       toast.success(isEdit ? "繰り返しTodoを更新しました" : "繰り返しTodoを登録しました");
-      router.push("/recurrence");
+      router.push("/home");
       router.refresh();
     } catch (err) {
       toast.error(
@@ -278,7 +278,7 @@ export function RecurrenceSeriesForm({
       </div>
 
       <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={() => router.push("/recurrence")}>
+        <Button type="button" variant="outline" onClick={() => router.push("/home")}>
           キャンセル
         </Button>
         <Button type="submit" disabled={submitting}>
